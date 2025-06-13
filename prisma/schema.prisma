@@ -1,0 +1,151 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Enums
+enum UserRole {
+  USER
+  RENTER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  EXPIRED
+  FAILED
+}
+
+// Models
+model User {
+  id          String   @id @default(uuid())
+  fullName    String   @map("full_name")
+  email       String   @unique
+  password    String
+  phoneNumber String?  @map("phone_number")
+  role        UserRole @default(USER)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  profile  UserProfile?
+  venues   Venue[]
+  bookings Booking[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  userId            String   @id @map("user_id")
+  profilePictureUrl String?  @map("profile_picture_url")
+  bio               String?
+  address           String?
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model SportType {
+  id      String  @id @default(uuid())
+  name    String  @unique
+  iconUrl String? @map("icon_url")
+
+  fields Field[]
+
+  @@map("sport_types")
+}
+
+model Venue {
+  id           String   @id @default(uuid())
+  renterId     String   @map("renter_id")
+  name         String
+  address      String
+  description  String?
+  mainPhotoUrl String?  @map("main_photo_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  renter User    @relation(fields: [renterId], references: [id], onDelete: Cascade)
+  fields Field[]
+
+  @@map("venues")
+}
+
+model Field {
+  id           String   @id @default(uuid())
+  venueId      String   @map("venue_id")
+  sportTypeId  String   @map("sport_type_id")
+  fieldName    String   @map("field_name")
+  description  String?
+  pricePerHour Float    @default(0) @map("price_per_hour")
+  mainPhotoUrl String?  @map("main_photo_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  venue             Venue              @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  sportType         SportType          @relation(fields: [sportTypeId], references: [id])
+  schedules         FieldSchedule[]
+  scheduleOverrides ScheduleOverride[]
+  bookings          Booking[]
+
+  @@map("fields")
+}
+
+model FieldSchedule {
+  id        String   @id @default(uuid())
+  fieldId   String   @map("field_id")
+  dayOfWeek Int      @map("day_of_week") // 1 = Monday, 7 = Sunday
+  openTime  DateTime @map("open_time") @db.Time()
+  closeTime DateTime @map("close_time") @db.Time()
+
+  field Field @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@map("field_schedules")
+}
+
+model ScheduleOverride {
+  id           String    @id @default(uuid())
+  fieldId      String    @map("field_id")
+  overrideDate DateTime  @map("override_date") @db.Date
+  isClosed     Boolean   @default(false) @map("is_closed")
+  openTime     DateTime? @map("open_time") @db.Time()
+  closeTime    DateTime? @map("close_time") @db.Time()
+
+  field Field @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@map("schedule_overrides")
+}
+
+model Booking {
+  id                 String        @id @default(uuid())
+  userId             String        @map("user_id")
+  fieldId            String        @map("field_id")
+  bookingDate        DateTime      @map("booking_date") @db.Date
+  startTime          DateTime      @map("start_time") @db.Time()
+  endTime            DateTime      @map("end_time") @db.Time()
+  totalPrice         Float         @map("total_price")
+  status             BookingStatus @default(PENDING)
+  snapToken          String?       @map("snap_token")
+  paymentRedirectUrl String?       @map("payment_redirect_url")
+  paymentStatus      PaymentStatus @default(PENDING) @map("payment_status")
+  createdAt          DateTime      @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id])
+  field Field @relation(fields: [fieldId], references: [id])
+
+  @@map("bookings")
+}
