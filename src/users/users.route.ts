@@ -44,5 +44,9 @@ export class UsersRoute {
             this.usersController.updateUser
         );
         this.router.delete(`${this.path}/:id`, this.usersController.deleteUser);
+        this.router.post(
+            `${this.path}/bulk-delete`,
+            this.usersController.deleteMultipleUsers
+        );
     }
 }

@@ -1,42 +1,30 @@
-// src/auth/auth.service.ts
-import { PrismaClient, User, UserRole } from "@prisma/client";
+import { User, UserRole } from "@prisma/client";
 import { RegisterUserDto } from "./dtos/register-user.dto";
 import * as bcrypt from "bcryptjs";
-import * as jwt from "jsonwebtoken";
 import { LoginUserDto } from "./dtos/login-user.dto";
-
-export interface DataStoredInToken {
-    id: string;
-    role: UserRole;
-}
-
-export interface TokenData {
-    token: string;
-    expiresIn: number;
-}
+import { randomBytes } from "crypto";
+import prisma from "../db";
 
 export class AuthService {
-    private prisma = new PrismaClient();
-
     public async register(
         userData: RegisterUserDto
     ): Promise<Omit<User, "password">> {
-        const findUser = await this.prisma.user.findUnique({
-            where: { email: userData.email },
-        });
         if (userData.role === "ADMIN") {
             throw new Error(
                 "Admin role cannot be registered through this public endpoint."
             );
         }
 
+        const findUser = await prisma.user.findUnique({
+            where: { email: userData.email },
+        });
         if (findUser) {
             throw new Error(`This email ${userData.email} already exists.`);
         }
 
         const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-        const createdUser = await this.prisma.user.create({
+        const createdUser = await prisma.user.create({
             data: {
                 ...userData,
                 password: hashedPassword,
@@ -46,17 +34,18 @@ export class AuthService {
         const { password, ...userWithoutPassword } = createdUser;
         return userWithoutPassword;
     }
+
     public async login(
         userData: LoginUserDto
-    ): Promise<{ tokenData: TokenData; user: Omit<User, "password"> }> {
-        const findUser = await this.prisma.user.findUnique({
+    ): Promise<{ sessionId: string; user: Omit<User, "password"> }> {
+        const findUser = await prisma.user.findUnique({
             where: { email: userData.email },
         });
         if (!findUser) {
             throw new Error(`This email ${userData.email} was not found.`);
         }
 
-        const isPasswordMatching: boolean = await bcrypt.compare(
+        const isPasswordMatching = await bcrypt.compare(
             userData.password,
             findUser.password
         );
@@ -64,23 +53,26 @@ export class AuthService {
             throw new Error("Password not matching");
         }
 
-        const tokenData = this.createToken(findUser);
-        const { password, ...userWithoutPassword } = findUser;
+        const sessionId = randomBytes(32).toString("hex");
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-        return { tokenData, user: userWithoutPassword };
+        await prisma.session.create({
+            data: {
+                id: sessionId,
+                userId: findUser.id,
+                expiresAt: expiresAt,
+            },
+        });
+
+        const { password, ...userWithoutPassword } = findUser;
+        return { sessionId, user: userWithoutPassword };
     }
 
-    private createToken(user: User): TokenData {
-        const dataStoredInToken: DataStoredInToken = {
-            id: user.id,
-            role: user.role,
-        };
-        const secretKey: string = process.env.JWT_SECRET || "supersecret";
-        const expiresIn: number = 60 * 60 * 24; // 24 jam
-
-        return {
-            expiresIn,
-            token: jwt.sign(dataStoredInToken, secretKey, { expiresIn }),
-        };
+    public async logout(sessionId: string): Promise<void> {
+        await prisma.session
+            .delete({
+                where: { id: sessionId },
+            })
+            .catch(() => {});
     }
 }

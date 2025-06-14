@@ -78,4 +78,23 @@ export class UsersController {
             next(error);
         }
     };
+    public deleteMultipleUsers = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ): Promise<void> => {
+        try {
+            const { ids } = req.body;
+            if (!ids || !Array.isArray(ids)) {
+                res.status(400).json({
+                    message: 'Invalid input: "ids" must be an array.',
+                });
+                return;
+            }
+            await this.userService.deleteMultipleUsers(ids);
+            res.status(200).json({ message: "Users deleted successfully" });
+        } catch (error) {
+            next(error);
+        }
+    };
 }

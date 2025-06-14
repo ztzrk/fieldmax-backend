@@ -1,8 +1,5 @@
-// src/middleware/auth.middleware.ts
-import { NextFunction, Response, Request } from "express";
-import * as jwt from "jsonwebtoken";
-import { PrismaClient, User } from "@prisma/client";
-import { DataStoredInToken } from "../auth/auth.service";
+import { NextFunction, Request, Response } from "express";
+import prisma from "../db";
 
 export const authMiddleware = async (
     req: Request,
@@ -10,33 +7,28 @@ export const authMiddleware = async (
     next: NextFunction
 ) => {
     try {
-        const authHeader = req.headers["authorization"];
-        const token = authHeader && authHeader.split(" ")[1];
-
-        if (!token) {
-            res.status(401).json({ message: "Authentication token missing" });
+        const sessionId = req.cookies["sessionId"];
+        if (!sessionId) {
+            res.status(401).json({ message: "Not authenticated" });
             return;
         }
 
-        const secretKey: string = process.env.JWT_SECRET || "supersecret";
-        const verificationResponse = jwt.verify(
-            token,
-            secretKey
-        ) as DataStoredInToken;
-        const userId = verificationResponse.id;
-
-        const prisma = new PrismaClient();
-        const findUser: User | null = await prisma.user.findUnique({
-            where: { id: userId },
+        const session = await prisma.session.findUnique({
+            where: { id: sessionId },
+            include: { user: true },
         });
 
-        if (findUser) {
-            req.user = findUser;
-            next();
-        } else {
-            res.status(401).json({ message: "Wrong authentication token" });
+        if (!session || session.expiresAt < new Date()) {
+            if (session) {
+                await prisma.session.delete({ where: { id: sessionId } });
+            }
+            res.status(401).json({ message: "Session expired or invalid" });
+            return;
         }
+
+        req.user = session.user;
+        next();
     } catch (error) {
-        res.status(401).json({ message: "Wrong authentication token" });
+        res.status(401).json({ message: "Authentication failed" });
     }
 };
