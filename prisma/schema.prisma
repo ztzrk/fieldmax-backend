@@ -32,6 +32,16 @@ enum PaymentStatus {
   FAILED
 }
 
+model Session {
+  id        String   @id
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
 // Models
 model User {
   id          String   @id @default(uuid())
@@ -45,6 +55,7 @@ model User {
   profile  UserProfile?
   venues   Venue[]
   bookings Booking[]
+  sessions Session[]
 
   @@map("users")
 }
