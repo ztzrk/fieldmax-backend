@@ -1,7 +1,8 @@
 // src/users/users.service.ts
-import { PrismaClient, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { UpdateUserDto } from "./dtos/update-user.dto";
 import { RegisterUserDto } from "../auth/dtos/register-user.dto";
+import prisma from "../db";
 import * as bcrypt from "bcryptjs";
 
 // Helper function to exclude keys from an object
@@ -16,17 +17,15 @@ function exclude<User, Key extends keyof User>(
 }
 
 export class UserService {
-    private prisma = new PrismaClient();
-
     public async findAllUsers(): Promise<Omit<User, "password">[]> {
-        const users = await this.prisma.user.findMany();
+        const users = await prisma.user.findMany();
         return users.map((user) => exclude(user, ["password"]));
     }
 
     public async findUserById(
         userId: string
     ): Promise<Omit<User, "password"> | null> {
-        const user = await this.prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user) throw new Error("User not found");
@@ -37,7 +36,7 @@ export class UserService {
         userId: string,
         userData: UpdateUserDto
     ): Promise<Omit<User, "password">> {
-        const updatedUser = await this.prisma.user.update({
+        const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: { ...userData },
         });
@@ -45,7 +44,7 @@ export class UserService {
     }
 
     public async deleteUser(userId: string): Promise<Omit<User, "password">> {
-        const deletedUser = await this.prisma.user.delete({
+        const deletedUser = await prisma.user.delete({
             where: { id: userId },
         });
         return exclude(deletedUser, ["password"]);
@@ -54,7 +53,7 @@ export class UserService {
     public async createUser(
         userData: RegisterUserDto
     ): Promise<Omit<User, "password">> {
-        const findUser = await this.prisma.user.findUnique({
+        const findUser = await prisma.user.findUnique({
             where: { email: userData.email },
         });
         if (findUser) {
@@ -62,7 +61,7 @@ export class UserService {
         }
 
         const hashedPassword = await bcrypt.hash(userData.password, 10);
-        const createdUser = await this.prisma.user.create({
+        const createdUser = await prisma.user.create({
             data: {
                 ...userData,
                 password: hashedPassword,
@@ -70,5 +69,14 @@ export class UserService {
         });
 
         return exclude(createdUser, ["password"]);
+    }
+    public async deleteMultipleUsers(userIds: string[]): Promise<void> {
+        await prisma.user.deleteMany({
+            where: {
+                id: {
+                    in: userIds,
+                },
+            },
+        });
     }
 }
