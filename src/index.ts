@@ -5,14 +5,15 @@ import { UsersRoute } from "./users/users.route";
 
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { SportTypesRoute } from "./sport-types/sport-types.route";
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(
     cors({
-        origin: "http://localhost:3001", // Adjust this to your frontend URL
-        credentials: true, // Allow cookies to be sent
+        origin: "http://localhost:3001",
+        credentials: true,
     })
 );
 app.use(express.json());
@@ -21,8 +22,10 @@ app.use(cookieParser());
 // Routes
 const authRoute = new AuthRoute();
 const usersRoute = new UsersRoute();
+const sportTypesRoute = new SportTypesRoute();
 app.use("/api", authRoute.router);
 app.use("/api", usersRoute.router);
+app.use("/api", sportTypesRoute.router);
 
 // Simple test route
 app.get("/", (req: Request, res: Response) => {
