@@ -73,9 +73,9 @@ model UserProfile {
 }
 
 model SportType {
-  id      String  @id @default(uuid())
-  name    String  @unique
-  iconUrl String? @map("icon_url")
+  id       String  @id @default(uuid())
+  name     String  @unique
+  iconName String? @map("icon_name")
 
   fields Field[]
 
