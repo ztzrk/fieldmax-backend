@@ -5,7 +5,7 @@ export class CreateSportTypeDto {
     @IsNotEmpty()
     name!: string;
 
-    @IsUrl()
+    @IsString()
     @IsOptional()
-    iconUrl?: string;
+    iconName?: string;
 }
