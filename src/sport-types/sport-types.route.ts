@@ -1,0 +1,54 @@
+import { Router, Response, NextFunction, Request } from "express";
+import { SportTypesController } from "./sport-types.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
+import { validationMiddleware } from "../middleware/validation.middleware";
+import { CreateSportTypeDto } from "./dtos/create-sport-type.dto";
+
+const adminOnlyMiddleware = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    if (req.user && req.user.role === "ADMIN") {
+        next();
+    } else {
+        res.status(403).json({ message: "Forbidden: Requires Admin role" });
+    }
+};
+
+export class SportTypesRoute {
+    public path = "/sport-types";
+    public router = Router();
+    public controller = new SportTypesController();
+
+    constructor() {
+        this.initializeRoutes();
+    }
+
+    private initializeRoutes() {
+        this.router.get(`${this.path}`, this.controller.getAll);
+
+        this.router.post(
+            `${this.path}`,
+            authMiddleware,
+            adminOnlyMiddleware,
+            validationMiddleware(CreateSportTypeDto),
+            this.controller.create
+        );
+
+        this.router.put(
+            `${this.path}/:id`,
+            authMiddleware,
+            adminOnlyMiddleware,
+            validationMiddleware(CreateSportTypeDto, true),
+            this.controller.update
+        );
+
+        this.router.delete(
+            `${this.path}/:id`,
+            authMiddleware,
+            adminOnlyMiddleware,
+            this.controller.delete
+        );
+    }
+}
