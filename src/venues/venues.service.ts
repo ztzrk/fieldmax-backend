@@ -11,9 +11,6 @@ export class VenuesService {
                         email: true,
                     },
                 },
-                _count: {
-                    select: { fields: true },
-                },
             },
         });
         return venues;
