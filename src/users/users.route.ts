@@ -5,18 +5,7 @@ import { authMiddleware } from "../middleware/auth.middleware";
 import { validationMiddleware } from "../middleware/validation.middleware";
 import { UpdateUserDto } from "./dtos/update-user.dto";
 import { RegisterUserDto } from "../auth/dtos/register-user.dto";
-
-const adminOnlyMiddleware = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    if (req.user && req.user.role === "ADMIN") {
-        next();
-    } else {
-        res.status(403).json({ message: "Forbidden: Requires Admin role" });
-    }
-};
+import { adminOnlyMiddleware } from "../middleware/admin.middleware";
 
 export class UsersRoute {
     public path = "/users";
