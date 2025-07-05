@@ -3,18 +3,7 @@ import { SportTypesController } from "./sport-types.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { validationMiddleware } from "../middleware/validation.middleware";
 import { CreateSportTypeDto } from "./dtos/create-sport-type.dto";
-
-const adminOnlyMiddleware = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    if (req.user && req.user.role === "ADMIN") {
-        next();
-    } else {
-        res.status(403).json({ message: "Forbidden: Requires Admin role" });
-    }
-};
+import { adminOnlyMiddleware } from "../middleware/admin.middleware";
 
 export class SportTypesRoute {
     public path = "/sport-types";
