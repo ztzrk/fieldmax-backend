@@ -40,5 +40,12 @@ export class VenuesRoute {
             adminOnlyMiddleware,
             this.controller.delete
         );
+
+        this.router.delete(
+            `${this.path}/multiple`,
+            authMiddleware,
+            adminOnlyMiddleware,
+            this.controller.deleteMultiple
+        );
     }
 }
