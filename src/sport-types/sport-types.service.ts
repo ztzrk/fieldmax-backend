@@ -44,4 +44,10 @@ export class SportTypesService {
             );
         }
     }
+    public async deleteMultiple(ids: string[]) {
+        const deletedSportTypes = await prisma.sportType.deleteMany({
+            where: { id: { in: ids } },
+        });
+        return deletedSportTypes;
+    }
 }
