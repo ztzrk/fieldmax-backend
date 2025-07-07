@@ -52,4 +52,11 @@ export class VenuesService {
         const deletedVenue = await prisma.venue.delete({ where: { id } });
         return deletedVenue;
     }
+
+    public async deleteMultiple(ids: string[]) {
+        const deletedVenues = await prisma.venue.deleteMany({
+            where: { id: { in: ids } },
+        });
+        return deletedVenues;
+    }
 }
