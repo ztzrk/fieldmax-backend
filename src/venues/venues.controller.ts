@@ -58,4 +58,18 @@ export class VenuesController {
             next(error);
         }
     };
+
+    public deleteMultiple = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { ids } = req.body;
+            const data = await this.service.deleteMultiple(ids);
+            res.status(200).json({ data, message: "deleted multiple" });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
