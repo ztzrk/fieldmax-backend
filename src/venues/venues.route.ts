@@ -4,6 +4,7 @@ import { authMiddleware } from "../middleware/auth.middleware";
 import { validationMiddleware } from "../middleware/validation.middleware";
 import { CreateVenueDto } from "./dtos/create-venue.dto";
 import { canManageVenue } from "../middleware/permission.middleware";
+import { adminOnlyMiddleware } from "../middleware/admin.middleware";
 
 export class VenuesRoute {
     public path = "/venues";
@@ -46,6 +47,13 @@ export class VenuesRoute {
             authMiddleware,
             canManageVenue,
             this.controller.deleteMultiple
+        );
+
+        this.router.patch(
+            `${this.path}/:id/approve`,
+            authMiddleware,
+            adminOnlyMiddleware,
+            this.controller.approve
         );
     }
 }
