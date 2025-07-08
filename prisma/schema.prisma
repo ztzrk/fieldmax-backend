@@ -32,6 +32,12 @@ enum PaymentStatus {
   FAILED
 }
 
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Session {
   id        String   @id
   userId    String   @map("user_id")
@@ -83,13 +89,14 @@ model SportType {
 }
 
 model Venue {
-  id           String   @id @default(uuid())
-  renterId     String   @map("renter_id")
-  name         String   @unique
+  id           String             @id @default(uuid())
+  renterId     String             @map("renter_id")
+  name         String             @unique
   address      String
   description  String?
-  mainPhotoUrl String?  @map("main_photo_url")
-  createdAt    DateTime @default(now()) @map("created_at")
+  mainPhotoUrl String?            @map("main_photo_url")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  status       VerificationStatus @default(PENDING)
 
   renter User    @relation(fields: [renterId], references: [id], onDelete: Cascade)
   fields Field[]
@@ -98,14 +105,15 @@ model Venue {
 }
 
 model Field {
-  id           String   @id @default(uuid())
-  venueId      String   @map("venue_id")
-  sportTypeId  String   @map("sport_type_id")
-  fieldName    String   @map("field_name")
+  id           String             @id @default(uuid())
+  venueId      String             @map("venue_id")
+  sportTypeId  String             @map("sport_type_id")
+  fieldName    String             @map("field_name")
   description  String?
-  pricePerHour Float    @default(0) @map("price_per_hour")
-  mainPhotoUrl String?  @map("main_photo_url")
-  createdAt    DateTime @default(now()) @map("created_at")
+  pricePerHour Float              @default(0) @map("price_per_hour")
+  mainPhotoUrl String?            @map("main_photo_url")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  status       VerificationStatus @default(PENDING)
 
   venue             Venue              @relation(fields: [venueId], references: [id], onDelete: Cascade)
   sportType         SportType          @relation(fields: [sportTypeId], references: [id])
