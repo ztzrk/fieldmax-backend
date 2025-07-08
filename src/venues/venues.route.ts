@@ -1,9 +1,9 @@
-import { Router, Response, NextFunction, Request } from "express";
+import { Router } from "express";
 import { VenuesController } from "./venues.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { validationMiddleware } from "../middleware/validation.middleware";
-import { CreateVenueDto, UpdateVenueDto } from "./dtos/venue.dto";
-import { adminOnlyMiddleware } from "../middleware/admin.middleware";
+import { CreateVenueDto } from "./dtos/create-venue.dto";
+import { canManageVenue } from "../middleware/permission.middleware";
 
 export class VenuesRoute {
     public path = "/venues";
@@ -21,7 +21,7 @@ export class VenuesRoute {
         this.router.post(
             `${this.path}`,
             authMiddleware,
-            adminOnlyMiddleware,
+            canManageVenue,
             validationMiddleware(CreateVenueDto),
             this.controller.create
         );
@@ -29,22 +29,22 @@ export class VenuesRoute {
         this.router.put(
             `${this.path}/:id`,
             authMiddleware,
-            adminOnlyMiddleware,
-            validationMiddleware(UpdateVenueDto, true),
+            canManageVenue,
+            validationMiddleware(CreateVenueDto, true),
             this.controller.update
         );
 
         this.router.delete(
             `${this.path}/:id`,
             authMiddleware,
-            adminOnlyMiddleware,
+            canManageVenue,
             this.controller.delete
         );
 
         this.router.delete(
             `${this.path}/multiple`,
             authMiddleware,
-            adminOnlyMiddleware,
+            canManageVenue,
             this.controller.deleteMultiple
         );
     }
