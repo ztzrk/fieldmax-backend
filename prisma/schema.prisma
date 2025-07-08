@@ -85,7 +85,7 @@ model SportType {
 model Venue {
   id           String   @id @default(uuid())
   renterId     String   @map("renter_id")
-  name         String
+  name         String   @unique
   address      String
   description  String?
   mainPhotoUrl String?  @map("main_photo_url")
@@ -119,7 +119,7 @@ model Field {
 model FieldSchedule {
   id        String   @id @default(uuid())
   fieldId   String   @map("field_id")
-  dayOfWeek Int      @map("day_of_week") // 1 = Monday, 7 = Sunday
+  dayOfWeek Int      @map("day_of_week")
   openTime  DateTime @map("open_time") @db.Time()
   closeTime DateTime @map("close_time") @db.Time()
 
