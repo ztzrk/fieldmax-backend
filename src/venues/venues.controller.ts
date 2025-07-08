@@ -1,15 +1,22 @@
 import { NextFunction, Request, Response } from "express";
 import { VenuesService } from "./venues.service";
 import { CreateVenueDto } from "./dtos/create-venue.dto";
-import { User } from "@prisma/client";
 
 export class VenuesController {
     public service = new VenuesService();
 
     public getAll = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data = await this.service.findAll();
-            res.status(200).json({ data, message: "findAll" });
+            if (req.user && req.user.role === "ADMIN") {
+                const data = await this.service.findAllAdmin();
+                res.status(200).json({ data, message: "findAllAdmin" });
+            } else if (req.user && req.user.role === "RENTER") {
+                const data = await this.service.findAllForRenter(req.user.id);
+                res.status(200).json({ data, message: "findAllForRenter" });
+            } else {
+                const data = await this.service.findAllPublic();
+                res.status(200).json({ data, message: "findAllPublic" });
+            }
         } catch (error) {
             next(error);
         }
@@ -69,6 +76,19 @@ export class VenuesController {
             const { ids } = req.body;
             const data = await this.service.deleteMultiple(ids);
             res.status(200).json({ data, message: "deleted multiple" });
+        } catch (error) {
+            next(error);
+        }
+    };
+    public approve = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { id } = req.params;
+            const data = await this.service.approve(id);
+            res.status(200).json({ data, message: "venue approved" });
         } catch (error) {
             next(error);
         }
