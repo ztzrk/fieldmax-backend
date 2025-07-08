@@ -5,6 +5,7 @@ import { adminOnlyMiddleware } from "../middleware/admin.middleware";
 import { validationMiddleware } from "../middleware/validation.middleware";
 import { CreateFieldDto } from "./dtos/create-field.dto";
 import { canManageField } from "../middleware/permission.middleware";
+import { ScheduleOverrideDto } from "./dtos/override.dto";
 
 export class FieldsRoute {
     public path = "/fields";
@@ -43,6 +44,27 @@ export class FieldsRoute {
             authMiddleware,
             canManageField,
             this.controller.deleteMultiple
+        );
+        this.router.get(
+            `${this.path}/:fieldId/overrides`,
+            authMiddleware,
+            canManageField,
+            this.controller.getOverrides
+        );
+
+        this.router.post(
+            `${this.path}/:fieldId/overrides`,
+            authMiddleware,
+            canManageField,
+            validationMiddleware(ScheduleOverrideDto),
+            this.controller.createOverride
+        );
+
+        this.router.delete(
+            `${this.path}/:fieldId/overrides/:overrideId`,
+            authMiddleware,
+            canManageField,
+            this.controller.deleteOverride
         );
     }
 }
