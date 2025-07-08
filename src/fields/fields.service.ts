@@ -1,4 +1,6 @@
 import prisma from "../db";
+import { CreateFieldDto } from "./dtos/create-field.dto";
+import { ScheduleOverrideDto } from "./dtos/override.dto";
 
 export class FieldsService {
     public async findAll() {
@@ -19,25 +21,55 @@ export class FieldsService {
         if (!field) throw new Error("Field not found");
         return field;
     }
-    public async create(data: any) {
-        const newField = await prisma.field.create({
-            data,
-            include: {
-                sportType: true,
-            },
+    public async create(data: CreateFieldDto) {
+        const { schedules, ...fieldData } = data;
+
+        return prisma.$transaction(async (tx) => {
+            const newField = await tx.field.create({
+                data: fieldData,
+            });
+
+            if (schedules && schedules.length > 0) {
+                const scheduleData = schedules.map((schedule) => ({
+                    ...schedule,
+                    fieldId: newField.id,
+                }));
+                await tx.fieldSchedule.createMany({
+                    data: scheduleData,
+                });
+            }
+
+            return newField;
         });
-        return newField;
     }
-    public async update(id: string, data: any) {
-        const updatedField = await prisma.field.update({
-            where: { id },
-            data,
-            include: {
-                sportType: true,
-            },
+
+    public async update(id: string, data: CreateFieldDto) {
+        const { schedules, ...fieldData } = data;
+
+        return prisma.$transaction(async (tx) => {
+            const updatedField = await tx.field.update({
+                where: { id },
+                data: fieldData,
+            });
+
+            await tx.fieldSchedule.deleteMany({
+                where: { fieldId: id },
+            });
+
+            if (schedules && schedules.length > 0) {
+                const scheduleData = schedules.map((schedule) => ({
+                    ...schedule,
+                    fieldId: updatedField.id,
+                }));
+                await tx.fieldSchedule.createMany({
+                    data: scheduleData,
+                });
+            }
+
+            return updatedField;
         });
-        return updatedField;
     }
+
     public async delete(id: string) {
         try {
             const deletedField = await prisma.field.delete({
@@ -55,5 +87,29 @@ export class FieldsService {
             where: { id: { in: ids } },
         });
         return deletedFields;
+    }
+    public async getOverrides(fieldId: string) {
+        const overrides = await prisma.scheduleOverride.findMany({
+            where: { fieldId },
+            orderBy: { overrideDate: "asc" },
+        });
+        return overrides;
+    }
+
+    public async createOverride(fieldId: string, data: ScheduleOverrideDto) {
+        const newOverride = await prisma.scheduleOverride.create({
+            data: {
+                fieldId,
+                ...data,
+            },
+        });
+        return newOverride;
+    }
+
+    public async deleteOverride(overrideId: string) {
+        const deletedOverride = await prisma.scheduleOverride.delete({
+            where: { id: overrideId },
+        });
+        return deletedOverride;
     }
 }
