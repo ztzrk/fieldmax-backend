@@ -1,5 +1,6 @@
+import { User } from "@prisma/client";
 import prisma from "../db";
-import { CreateVenueDto, UpdateVenueDto } from "./dtos/venue.dto";
+import { CreateVenueDto } from "./dtos/create-venue.dto";
 
 export class VenuesService {
     public async findAll() {
@@ -28,10 +29,22 @@ export class VenuesService {
         return venue;
     }
 
-    public async create(data: CreateVenueDto) {
-        const renter = await prisma.user.findUnique({
+    public async create(data: CreateVenueDto, creatingUser: User) {
+        if (creatingUser.role === "RENTER") {
+            data.renterId = creatingUser.id;
+        }
+
+        const existingVenue = await prisma.venue.findUnique({
+            where: { name: data.name },
+        });
+        const renter = await prisma.user.findFirst({
             where: { id: data.renterId },
         });
+
+        if (existingVenue) {
+            throw new Error("Venue with this name already exists.");
+        }
+
         if (!renter || renter.role !== "RENTER") {
             throw new Error("Invalid renter ID provided.");
         }
@@ -40,7 +53,7 @@ export class VenuesService {
         return newVenue;
     }
 
-    public async update(id: string, data: UpdateVenueDto) {
+    public async update(id: string, data: CreateVenueDto) {
         const updatedVenue = await prisma.venue.update({
             where: { id },
             data,
