@@ -3,8 +3,38 @@ import prisma from "../db";
 import { CreateVenueDto } from "./dtos/create-venue.dto";
 
 export class VenuesService {
-    public async findAll() {
+    public async findAllAdmin() {
         const venues = await prisma.venue.findMany({
+            include: {
+                renter: {
+                    select: {
+                        fullName: true,
+                        email: true,
+                    },
+                },
+            },
+        });
+        return venues;
+    }
+
+    public async findAllForRenter(renterId: string) {
+        const venues = await prisma.venue.findMany({
+            where: { renterId },
+            include: {
+                renter: {
+                    select: {
+                        fullName: true,
+                        email: true,
+                    },
+                },
+            },
+        });
+        return venues;
+    }
+
+    public async findAllPublic() {
+        const venues = await prisma.venue.findMany({
+            where: { status: "APPROVED" },
             include: {
                 renter: {
                     select: {
@@ -71,5 +101,12 @@ export class VenuesService {
             where: { id: { in: ids } },
         });
         return deletedVenues;
+    }
+
+    public async approve(id: string) {
+        return prisma.venue.update({
+            where: { id },
+            data: { status: "APPROVED" },
+        });
     }
 }
