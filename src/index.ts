@@ -7,6 +7,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { SportTypesRoute } from "./sport-types/sport-types.route";
 import { VenuesRoute } from "./venues/venues.route";
+import { FieldsRoute } from "./fields/fields.route";
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
@@ -25,10 +26,13 @@ const authRoute = new AuthRoute();
 const usersRoute = new UsersRoute();
 const sportTypesRoute = new SportTypesRoute();
 const venuesRoute = new VenuesRoute();
+const fieldsRoute = new FieldsRoute();
+
 app.use("/api", authRoute.router);
 app.use("/api", usersRoute.router);
 app.use("/api", sportTypesRoute.router);
 app.use("/api", venuesRoute.router);
+app.use("/api", fieldsRoute.router);
 
 // Simple test route
 app.get("/", (req: Request, res: Response) => {
