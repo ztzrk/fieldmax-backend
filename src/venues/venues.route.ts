@@ -16,8 +16,12 @@ export class VenuesRoute {
     }
 
     private initializeRoutes() {
-        this.router.get(`${this.path}`, this.controller.getAll);
-        this.router.get(`${this.path}/:id`, this.controller.getById);
+        this.router.get(`${this.path}`, authMiddleware, this.controller.getAll);
+        this.router.get(
+            `${this.path}/:id`,
+            authMiddleware,
+            this.controller.getById
+        );
 
         this.router.post(
             `${this.path}`,
@@ -54,6 +58,12 @@ export class VenuesRoute {
             authMiddleware,
             adminOnlyMiddleware,
             this.controller.approve
+        );
+        this.router.patch(
+            `${this.path}/:id/reject`,
+            authMiddleware,
+            adminOnlyMiddleware,
+            this.controller.reject
         );
     }
 }
