@@ -93,4 +93,13 @@ export class VenuesController {
             next(error);
         }
     };
+    public reject = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params;
+            const data = await this.service.reject(id);
+            res.status(200).json({ data, message: "venue rejected" });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
