@@ -1,6 +1,7 @@
 import { User } from "@prisma/client";
 import prisma from "../db";
 import { CreateVenueDto } from "./dtos/create-venue.dto";
+import e from "express";
 
 export class VenuesService {
     public async findAllAdmin() {
@@ -64,19 +65,21 @@ export class VenuesService {
             data.renterId = creatingUser.id;
         }
 
-        const existingVenue = await prisma.venue.findUnique({
-            where: { name: data.name },
-        });
         const renter = await prisma.user.findFirst({
-            where: { id: data.renterId },
+            where: { id: data.renterId, role: "RENTER" },
         });
+        if (!renter) throw new Error("Invalid renter ID provided.");
 
+        const existingVenue = await prisma.venue.findFirst({
+            where: {
+                name: data.name,
+                renterId: data.renterId,
+            },
+        });
         if (existingVenue) {
-            throw new Error("Venue with this name already exists.");
-        }
-
-        if (!renter || renter.role !== "RENTER") {
-            throw new Error("Invalid renter ID provided.");
+            throw new Error(
+                "A venue with this name already exists for this renter."
+            );
         }
 
         const newVenue = await prisma.venue.create({ data });
@@ -107,6 +110,13 @@ export class VenuesService {
         return prisma.venue.update({
             where: { id },
             data: { status: "APPROVED" },
+        });
+    }
+
+    public async reject(id: string) {
+        return prisma.venue.update({
+            where: { id },
+            data: { status: "REJECTED" },
         });
     }
 }
