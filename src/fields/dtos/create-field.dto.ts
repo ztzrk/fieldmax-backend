@@ -1,14 +1,14 @@
 import { Type } from "class-transformer";
 import {
-    IsString,
-    IsNotEmpty,
+    IsArray,
     IsOptional,
     IsUUID,
     IsNumber,
+    IsString,
+    IsNotEmpty,
     Min,
-    Max,
     ValidateNested,
-    IsArray,
+    Max,
 } from "class-validator";
 
 class ScheduleDto {
