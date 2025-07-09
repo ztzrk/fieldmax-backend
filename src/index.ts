@@ -1,4 +1,5 @@
 // src/index.ts
+import "reflect-metadata";
 import express, { Express, Request, Response } from "express";
 import { AuthRoute } from "./auth/auth.route";
 import { UsersRoute } from "./users/users.route";
