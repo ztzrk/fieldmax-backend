@@ -1,9 +1,7 @@
-import { Type } from "class-transformer";
 import {
     IsBoolean,
     IsDateString,
     IsNotEmpty,
-    IsOptional,
     IsString,
     ValidateIf,
 } from "class-validator";
