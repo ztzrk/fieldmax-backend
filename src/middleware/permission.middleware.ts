@@ -7,13 +7,12 @@ export const canManageVenue = async (
     next: NextFunction
 ) => {
     try {
-        const user = req.user!;
+        const user = req.user;
         const venueId = req.params.id;
 
         if (!user) res.status(401).json({ message: "Not authenticated" });
-        if (user.role !== "ADMIN") next();
-
-        if (user.role === "RENTER") {
+        if (user && user.role === "ADMIN") next();
+        else if (user && user.role === "RENTER") {
             const venue = await prisma.venue.findUnique({
                 where: { id: venueId },
                 select: { renterId: true },
@@ -22,9 +21,9 @@ export const canManageVenue = async (
             if (venue && venue.renterId === user.id) {
                 next();
             }
+        } else {
+            res.status(403).json({ message: "Forbidden" });
         }
-
-        res.status(403).json({ message: "Forbidden" });
     } catch (e) {
         next();
     }
@@ -41,8 +40,7 @@ export const canManageField = async (
 
         if (!user) res.status(401).json({ message: "Not authenticated" });
         if (user.role === "ADMIN") next();
-
-        if (user.role === "RENTER") {
+        else if (user.role === "RENTER") {
             const field = await prisma.field.findUnique({
                 where: { id: fieldId },
                 select: { venue: { select: { renterId: true } } },
@@ -51,9 +49,9 @@ export const canManageField = async (
             if (field && field.venue.renterId === user.id) {
                 next();
             }
+        } else {
+            res.status(403).json({ message: "Forbidden" });
         }
-
-        res.status(403).json({ message: "Forbidden" });
     } catch (error) {
         next(error);
     }
