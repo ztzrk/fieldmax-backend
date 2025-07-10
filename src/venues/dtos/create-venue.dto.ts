@@ -16,4 +16,8 @@ export class CreateVenueDto {
     @IsUUID()
     @IsNotEmpty()
     renterId!: string;
+
+    @IsString()
+    @IsOptional()
+    mainPhotoUrl?: string;
 }
