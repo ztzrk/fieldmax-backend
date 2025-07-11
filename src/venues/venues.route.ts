@@ -65,5 +65,12 @@ export class VenuesRoute {
             adminOnlyMiddleware,
             this.controller.reject
         );
+
+        this.router.delete(
+            `${this.path}/:venueId/photos/:photoId`,
+            authMiddleware,
+            canManageVenue,
+            this.controller.deletePhoto
+        );
     }
 }
