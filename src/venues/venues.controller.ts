@@ -102,4 +102,18 @@ export class VenuesController {
             next(error);
         }
     };
+
+    public deletePhoto = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { photoId } = req.params;
+            await this.service.deletePhoto(photoId);
+            res.status(200).json({ message: "Photo deleted" });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
