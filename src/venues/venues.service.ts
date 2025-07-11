@@ -2,6 +2,7 @@ import { User } from "@prisma/client";
 import prisma from "../db";
 import { CreateVenueDto } from "./dtos/create-venue.dto";
 import e from "express";
+import { supabase } from "../lib/supabase";
 
 export class VenuesService {
     public async findAllAdmin() {
@@ -54,6 +55,7 @@ export class VenuesService {
             include: {
                 fields: true,
                 renter: true,
+                photos: true,
             },
         });
         if (!venue) throw new Error("Venue not found");
@@ -118,5 +120,63 @@ export class VenuesService {
             where: { id },
             data: { status: "REJECTED" },
         });
+    }
+
+    public async addPhotos(venueId: string, files: Express.Multer.File[]) {
+        const timestamp = Date.now();
+
+        const uploadPromises = files.map((file, index) => {
+            const cleanOriginalName = file.originalname
+                .trim()
+                .replace(/\s+/g, "-");
+            const fileName = `${venueId}-${Date.now()}-${cleanOriginalName}`;
+            const filePath = `venue-photos/${fileName}`;
+
+            return supabase.storage
+                .from("fieldmax-assets")
+                .upload(filePath, file.buffer, {
+                    contentType: file.mimetype,
+                });
+        });
+
+        const uploadResults = await Promise.all(uploadPromises);
+
+        const photoDataToSave = uploadResults.map((result, index) => {
+            if (result.error) {
+                throw new Error(
+                    `Failed to upload file: ${files[index].originalname}`
+                );
+            }
+            const {
+                data: { publicUrl },
+            } = supabase.storage
+                .from("fieldmax-assets")
+                .getPublicUrl(result.data.path);
+
+            return {
+                venueId: venueId,
+                url: publicUrl,
+            };
+        });
+
+        const savedPhotos = await prisma.venuePhoto.createMany({
+            data: photoDataToSave,
+        });
+
+        return savedPhotos;
+    }
+
+    public async deletePhoto(photoId: string) {
+        const photo = await prisma.venuePhoto.findUnique({
+            where: { id: photoId },
+            select: { url: true },
+        });
+
+        if (photo) {
+            const filePath = photo.url.split("/fieldmax-assets/")[1];
+            await supabase.storage.from("fieldmax-assets").remove([filePath]);
+        }
+
+        return prisma.venuePhoto.delete({ where: { id: photoId } });
     }
 }
