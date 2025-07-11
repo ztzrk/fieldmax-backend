@@ -1,33 +1,28 @@
 import { Request, Response, NextFunction } from "express";
 import { supabase } from "../lib/supabase";
+import { VenuesService } from "../venues/venues.service";
 
 export class UploadsController {
-    public directUpload = async (
+    public uploadVenuePhotos = async (
         req: Request,
         res: Response,
         next: NextFunction
     ) => {
         try {
-            if (!req.file) {
-                throw new Error("No file uploaded.");
+            const { venueId } = req.params;
+            const files = req.files as Express.Multer.File[];
+
+            if (!files || files.length === 0) {
+                throw new Error("No files uploaded.");
             }
 
-            const file = req.file;
-            const filePath = `public/${Date.now()}-${file.originalname}`;
+            const venueService = new VenuesService();
+            const savedPhotos = await venueService.addPhotos(venueId, files);
 
-            const { data, error } = await supabase.storage
-                .from("fieldmax-assets")
-                .upload(filePath, file.buffer, {
-                    contentType: file.mimetype,
-                });
-
-            if (error) throw error;
-
-            const {
-                data: { publicUrl },
-            } = supabase.storage.from("fieldmax-assets").getPublicUrl(filePath);
-
-            res.status(200).json({ data: { publicUrl } });
+            res.status(201).json({
+                data: savedPhotos,
+                message: "Photos uploaded successfully",
+            });
         } catch (error) {
             next(error);
         }
