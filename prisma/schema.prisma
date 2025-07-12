@@ -89,13 +89,14 @@ model SportType {
 }
 
 model Venue {
-  id          String             @id @default(uuid())
-  renterId    String             @map("renter_id")
-  name        String
-  address     String
-  description String?
-  status      VerificationStatus @default(PENDING)
-  createdAt   DateTime           @default(now()) @map("created_at")
+  id              String             @id @default(uuid())
+  renterId        String             @map("renter_id")
+  name            String
+  address         String
+  description     String?
+  status          VerificationStatus @default(PENDING)
+  rejectionReason String?            @map("rejection_reason")
+  createdAt       DateTime           @default(now()) @map("created_at")
 
   renter User         @relation(fields: [renterId], references: [id], onDelete: Cascade)
   fields Field[]
