@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { SportTypesService } from "./sport-types.service";
-import { CreateSportTypeDto } from "./dtos/create-sport-type.dto";
+import { CreateSportTypeDto } from "./dtos/sport-type.dto";
 
 export class SportTypesController {
     public service = new SportTypesService();
