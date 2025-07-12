@@ -1,7 +1,7 @@
 // src/users/users.controller.ts
 import { NextFunction, Request, Response } from "express";
 import { UserService } from "./users.service";
-import { UpdateUserDto } from "./dtos/update-user.dto";
+import { UpdateUserDto } from "./dtos/user.dto";
 import { RegisterUserDto } from "../auth/dtos/register-user.dto";
 
 export class UsersController {
