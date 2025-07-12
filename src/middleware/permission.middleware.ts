@@ -28,6 +28,33 @@ export const canManageVenue = async (
         next();
     }
 };
+export const isVenueOwner = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const user = req.user;
+        const venueId = req.params.id;
+
+        if (!user || user.role !== "RENTER") {
+            res.status(403).json({
+                message: "Forbidden: Requires Renter role",
+            });
+        }
+
+        const venue = await prisma.venue.findUnique({
+            where: { id: venueId },
+            select: { renterId: true },
+        });
+
+        if (venue && user && venue.renterId === user.id) {
+            next();
+        }
+    } catch (error) {
+        next(error);
+    }
+};
 
 export const canManageField = async (
     req: Request,
