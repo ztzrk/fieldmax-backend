@@ -1,5 +1,5 @@
 import prisma from "../db";
-import { CreateSportTypeDto } from "./dtos/create-sport-type.dto";
+import { CreateSportTypeDto } from "./dtos/sport-type.dto";
 
 export class SportTypesService {
     public async findAll() {
