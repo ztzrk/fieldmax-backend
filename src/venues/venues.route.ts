@@ -2,8 +2,11 @@ import { Router } from "express";
 import { VenuesController } from "./venues.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { validationMiddleware } from "../middleware/validation.middleware";
-import { CreateVenueDto } from "./dtos/create-venue.dto";
-import { canManageVenue } from "../middleware/permission.middleware";
+import { CreateVenueDto, RejectVenueDto } from "./dtos/venue.dto";
+import {
+    canManageVenue,
+    isVenueOwner,
+} from "../middleware/permission.middleware";
 import { adminOnlyMiddleware } from "../middleware/admin.middleware";
 
 export class VenuesRoute {
@@ -46,7 +49,7 @@ export class VenuesRoute {
             this.controller.delete
         );
 
-        this.router.delete(
+        this.router.post(
             `${this.path}/multiple`,
             authMiddleware,
             canManageVenue,
@@ -59,15 +62,24 @@ export class VenuesRoute {
             adminOnlyMiddleware,
             this.controller.approve
         );
+
         this.router.patch(
             `${this.path}/:id/reject`,
             authMiddleware,
             adminOnlyMiddleware,
+            validationMiddleware(RejectVenueDto),
             this.controller.reject
         );
 
+        this.router.patch(
+            `${this.path}/:id/resubmit`,
+            authMiddleware,
+            isVenueOwner,
+            this.controller.resubmit
+        );
+
         this.router.delete(
-            `${this.path}/:venueId/photos/:photoId`,
+            `${this.path}/photos/:photoId`,
             authMiddleware,
             canManageVenue,
             this.controller.deletePhoto
