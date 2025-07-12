@@ -2,7 +2,7 @@ import { Router, Response, NextFunction, Request } from "express";
 import { SportTypesController } from "./sport-types.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { validationMiddleware } from "../middleware/validation.middleware";
-import { CreateSportTypeDto } from "./dtos/create-sport-type.dto";
+import { CreateSportTypeDto } from "./dtos/sport-type.dto";
 import { adminOnlyMiddleware } from "../middleware/admin.middleware";
 
 export class SportTypesRoute {
@@ -39,7 +39,7 @@ export class SportTypesRoute {
             adminOnlyMiddleware,
             this.controller.delete
         );
-        this.router.delete(
+        this.router.post(
             `${this.path}/multiple`,
             authMiddleware,
             adminOnlyMiddleware,
