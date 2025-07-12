@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { VenuesService } from "./venues.service";
-import { CreateVenueDto } from "./dtos/create-venue.dto";
+import { CreateVenueDto } from "./dtos/venue.dto";
 
 export class VenuesController {
     public service = new VenuesService();
@@ -96,8 +96,29 @@ export class VenuesController {
     public reject = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const data = await this.service.reject(id);
-            res.status(200).json({ data, message: "venue rejected" });
+            const data = req.body;
+            const rejectedVenue = await this.service.reject(id, data);
+            res.status(200).json({
+                data: rejectedVenue,
+                message: "venue rejected",
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    public resubmit = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { id } = req.params;
+            const data = await this.service.resubmit(id);
+            res.status(200).json({
+                data,
+                message: "Venue resubmitted for review",
+            });
         } catch (error) {
             next(error);
         }
