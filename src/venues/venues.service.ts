@@ -1,6 +1,6 @@
 import { User } from "@prisma/client";
 import prisma from "../db";
-import { CreateVenueDto } from "./dtos/create-venue.dto";
+import { CreateVenueDto } from "./dtos/venue.dto";
 import e from "express";
 import { supabase } from "../lib/supabase";
 
@@ -115,10 +115,33 @@ export class VenuesService {
         });
     }
 
-    public async reject(id: string) {
+    public async reject(id: string, data: { rejectionReason: string }) {
         return prisma.venue.update({
             where: { id },
-            data: { status: "REJECTED" },
+            data: {
+                status: "REJECTED",
+                rejectionReason: data.rejectionReason,
+            },
+        });
+    }
+
+    public async resubmit(id: string) {
+        const venueToUpdate = await prisma.venue.findUnique({ where: { id } });
+
+        if (!venueToUpdate) {
+            throw new Error("Venue not found.");
+        }
+
+        if (venueToUpdate.status !== "REJECTED") {
+            throw new Error("Only rejected venues can be resubmitted.");
+        }
+
+        return prisma.venue.update({
+            where: { id },
+            data: {
+                status: "PENDING",
+                rejectionReason: null,
+            },
         });
     }
 
