@@ -1,6 +1,6 @@
 // src/users/users.service.ts
 import { User } from "@prisma/client";
-import { UpdateUserDto } from "./dtos/update-user.dto";
+import { UpdateUserDto } from "./dtos/user.dto";
 import { RegisterUserDto } from "../auth/dtos/register-user.dto";
 import prisma from "../db";
 import * as bcrypt from "bcryptjs";
