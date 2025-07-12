@@ -1,4 +1,4 @@
-import { User, UserRole } from "@prisma/client";
+import { User } from "@prisma/client";
 import { RegisterUserDto } from "./dtos/register-user.dto";
 import * as bcrypt from "bcryptjs";
 import { LoginUserDto } from "./dtos/login-user.dto";
