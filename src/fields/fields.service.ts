@@ -1,5 +1,5 @@
 import prisma from "../db";
-import { CreateFieldDto } from "./dtos/create-field.dto";
+import { CreateFieldDto } from "./dtos/field.dto";
 import { ScheduleOverrideDto } from "./dtos/override.dto";
 
 export class FieldsService {
