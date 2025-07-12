@@ -3,7 +3,7 @@ import { Router, Response, NextFunction, Request } from "express";
 import { UsersController } from "./users.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { validationMiddleware } from "../middleware/validation.middleware";
-import { UpdateUserDto } from "./dtos/update-user.dto";
+import { UpdateUserDto } from "./dtos/user.dto";
 import { RegisterUserDto } from "../auth/dtos/register-user.dto";
 import { adminOnlyMiddleware } from "../middleware/admin.middleware";
 
@@ -34,7 +34,7 @@ export class UsersRoute {
         );
         this.router.delete(`${this.path}/:id`, this.usersController.deleteUser);
 
-        this.router.delete(
+        this.router.post(
             `${this.path}/multiple`,
             this.usersController.deleteMultipleUsers
         );
