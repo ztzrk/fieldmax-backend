@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { FieldsService } from "./fields.service";
-import { CreateFieldDto } from "./dtos/create-field.dto";
+import { CreateFieldDto } from "./dtos/field.dto";
 import { ScheduleOverrideDto } from "./dtos/override.dto";
 
 export class FieldsController {
