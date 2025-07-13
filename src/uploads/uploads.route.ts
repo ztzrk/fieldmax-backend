@@ -2,7 +2,10 @@ import { Router } from "express";
 import { UploadsController } from "./uploads.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
 import multer from "multer";
-import { canManageVenue } from "../middleware/permission.middleware";
+import {
+    canManageField,
+    canManageVenue,
+} from "../middleware/permission.middleware";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -17,11 +20,19 @@ export class UploadsRoute {
 
     private initializeRoutes() {
         this.router.post(
-            `${this.path}/:venueId/photos`,
+            `${this.path}/venue/:venueId/photos`,
             authMiddleware,
             canManageVenue,
             upload.array("photos", 5),
             this.controller.uploadVenuePhotos
+        );
+
+        this.router.post(
+            `${this.path}/field/:fieldId/photos`,
+            authMiddleware,
+            canManageField,
+            upload.array("photos", 5),
+            this.controller.uploadFieldPhotos
         );
     }
 }
