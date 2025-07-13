@@ -118,4 +118,17 @@ export class FieldsController {
             next(error);
         }
     };
+    public deletePhoto = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { photoId } = req.params;
+            const data = await this.service.deletePhoto(photoId);
+            res.status(200).json({ data, message: "deleted photo" });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
