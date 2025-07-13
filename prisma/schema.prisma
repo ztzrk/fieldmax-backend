@@ -124,7 +124,6 @@ model Field {
   fieldName    String             @map("field_name")
   description  String?
   pricePerHour Float              @default(0) @map("price_per_hour")
-  mainPhotoUrl String?            @map("main_photo_url")
   createdAt    DateTime           @default(now()) @map("created_at")
   status       VerificationStatus @default(PENDING)
 
@@ -133,8 +132,21 @@ model Field {
   schedules         FieldSchedule[]
   scheduleOverrides ScheduleOverride[]
   bookings          Booking[]
+  photos            FieldPhoto[]
 
   @@map("fields")
+}
+
+model FieldPhoto {
+  id         String   @id @default(uuid())
+  fieldId    String   @map("field_id")
+  url        String
+  isFeatured Boolean  @default(false) @map("is_featured")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  field Field @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@map("field_photos")
 }
 
 model FieldSchedule {
