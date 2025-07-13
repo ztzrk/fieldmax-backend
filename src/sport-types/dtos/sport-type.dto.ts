@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsUrl } from "class-validator";
+import { IsString, IsNotEmpty } from "class-validator";
 
 export class CreateSportTypeDto {
     @IsString()
@@ -6,6 +6,6 @@ export class CreateSportTypeDto {
     name!: string;
 
     @IsString()
-    @IsOptional()
-    iconName?: string;
+    @IsNotEmpty()
+    iconName!: string;
 }
