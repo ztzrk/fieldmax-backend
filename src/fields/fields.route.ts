@@ -66,5 +66,12 @@ export class FieldsRoute {
             canManageField,
             this.controller.deleteOverride
         );
+
+        this.router.delete(
+            `${this.path}/photos/:photoId`,
+            authMiddleware,
+            canManageField,
+            this.controller.deletePhoto
+        );
     }
 }
