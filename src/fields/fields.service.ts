@@ -1,4 +1,5 @@
 import prisma from "../db";
+import { supabase } from "../lib/supabase";
 import { CreateFieldDto } from "./dtos/field.dto";
 import { ScheduleOverrideDto } from "./dtos/override.dto";
 
@@ -16,6 +17,7 @@ export class FieldsService {
             where: { id },
             include: {
                 sportType: true,
+                photos: true,
             },
         });
         if (!field) throw new Error("Field not found");
@@ -111,5 +113,53 @@ export class FieldsService {
             where: { id: overrideId },
         });
         return deletedOverride;
+    }
+
+    public async addPhotos(fieldId: string, files: Express.Multer.File[]) {
+        const timestamp = Date.now();
+        const uploadPromises = files.map((file, index) => {
+            const cleanName = file.originalname.trim().replace(/\s+/g, "-");
+            const fileName = `${fieldId}-${timestamp}-${
+                index + 1
+            }-${cleanName}`;
+            const filePath = `field-photos/${fileName}`;
+            return supabase.storage
+                .from("fieldmax-assets")
+                .upload(filePath, file.buffer, { contentType: file.mimetype });
+        });
+
+        const uploadResults = await Promise.all(uploadPromises);
+
+        const photoDataToSave = uploadResults.map((result, index) => {
+            if (result.error)
+                throw new Error(
+                    `Failed to upload file: ${files[index].originalname}`
+                );
+            const {
+                data: { publicUrl },
+            } = supabase.storage
+                .from("fieldmax-assets")
+                .getPublicUrl(result.data.path);
+            return { fieldId, url: publicUrl };
+        });
+
+        return prisma.fieldPhoto.createMany({ data: photoDataToSave });
+    }
+
+    public async deletePhoto(photoId: string) {
+        const photo = await prisma.fieldPhoto.findUnique({
+            where: { id: photoId },
+        });
+        if (!photo) throw new Error("Photo not found");
+
+        const { data, error } = await supabase.storage
+            .from("fieldmax-assets")
+            .remove([photo.url]);
+
+        if (error) throw new Error(`Failed to delete photo: ${error.message}`);
+
+        return prisma.fieldPhoto.delete({
+            where: { id: photoId },
+        });
     }
 }
