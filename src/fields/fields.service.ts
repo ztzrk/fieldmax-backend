@@ -6,8 +6,26 @@ import { ScheduleOverrideDto } from "./dtos/override.dto";
 export class FieldsService {
     public async findAll() {
         const fields = await prisma.field.findMany({
-            include: {
-                sportType: true,
+            select: {
+                id: true,
+                name: true,
+                pricePerHour: true,
+                status: true,
+                sportType: {
+                    select: {
+                        name: true,
+                    },
+                },
+                venue: {
+                    select: {
+                        name: true,
+                    },
+                },
+            },
+            orderBy: {
+                venue: {
+                    name: "asc",
+                },
             },
         });
         return fields;
@@ -24,52 +42,16 @@ export class FieldsService {
         return field;
     }
     public async create(data: CreateFieldDto) {
-        const { schedules, ...fieldData } = data;
-
-        return prisma.$transaction(async (tx) => {
-            const newField = await tx.field.create({
-                data: fieldData,
-            });
-
-            if (schedules && schedules.length > 0) {
-                const scheduleData = schedules.map((schedule) => ({
-                    ...schedule,
-                    fieldId: newField.id,
-                }));
-                await tx.fieldSchedule.createMany({
-                    data: scheduleData,
-                });
-            }
-
-            return newField;
-        });
+        const field = await prisma.field.create({ data });
+        return field;
     }
 
     public async update(id: string, data: CreateFieldDto) {
-        const { schedules, ...fieldData } = data;
-
-        return prisma.$transaction(async (tx) => {
-            const updatedField = await tx.field.update({
-                where: { id },
-                data: fieldData,
-            });
-
-            await tx.fieldSchedule.deleteMany({
-                where: { fieldId: id },
-            });
-
-            if (schedules && schedules.length > 0) {
-                const scheduleData = schedules.map((schedule) => ({
-                    ...schedule,
-                    fieldId: updatedField.id,
-                }));
-                await tx.fieldSchedule.createMany({
-                    data: scheduleData,
-                });
-            }
-
-            return updatedField;
+        const updatedField = await prisma.field.update({
+            where: { id },
+            data,
         });
+        return updatedField;
     }
 
     public async delete(id: string) {
