@@ -52,14 +52,48 @@ export class VenuesService {
     public async findById(id: string) {
         const venue = await prisma.venue.findUnique({
             where: { id },
-            include: {
-                fields: true,
-                renter: true,
+            select: {
+                id: true,
+                name: true,
+                address: true,
+                description: true,
+                status: true,
+                rejectionReason: true,
+                renterId: true,
+                renter: {
+                    select: {
+                        fullName: true,
+                    },
+                },
                 photos: true,
+                fields: {
+                    select: {
+                        id: true,
+                        name: true,
+                        pricePerHour: true,
+                        status: true,
+                        sportType: {
+                            select: {
+                                name: true,
+                            },
+                        },
+                    },
+                },
             },
         });
+
         if (!venue) throw new Error("Venue not found");
-        return venue;
+
+        const transformedVenue = {
+            ...venue,
+            renterName: venue.renter.fullName,
+            fields: venue.fields.map((field) => ({
+                ...field,
+                sportTypeName: field.sportType.name,
+            })),
+        };
+
+        return transformedVenue;
     }
 
     public async create(data: CreateVenueDto, creatingUser: User) {
@@ -109,6 +143,25 @@ export class VenuesService {
     }
 
     public async approve(id: string) {
+        const venueWithPhotoCount = await prisma.venue.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: { photos: true },
+                },
+            },
+        });
+
+        if (!venueWithPhotoCount) {
+            throw new Error("Venue not found.");
+        }
+
+        if (venueWithPhotoCount._count.photos < 3) {
+            throw new Error(
+                "Venue must have at least 3 photos to be approved."
+            );
+        }
+
         return prisma.venue.update({
             where: { id },
             data: { status: "APPROVED" },
