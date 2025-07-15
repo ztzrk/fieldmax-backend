@@ -29,7 +29,7 @@ class ScheduleDto {
 export class CreateFieldDto {
     @IsString()
     @IsNotEmpty()
-    fieldName!: string;
+    name!: string;
 
     @IsUUID()
     @IsNotEmpty()
@@ -46,9 +46,4 @@ export class CreateFieldDto {
     @IsString()
     @IsOptional()
     description?: string;
-
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => ScheduleDto)
-    schedules!: ScheduleDto[];
 }
