@@ -121,7 +121,7 @@ model Field {
   id           String             @id @default(uuid())
   venueId      String             @map("venue_id")
   sportTypeId  String             @map("sport_type_id")
-  fieldName    String             @map("field_name")
+  name         String             @map("name")
   description  String?
   pricePerHour Float              @default(0) @map("price_per_hour")
   createdAt    DateTime           @default(now()) @map("created_at")
