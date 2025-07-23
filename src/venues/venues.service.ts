@@ -118,7 +118,21 @@ export class VenuesService {
             );
         }
 
-        const newVenue = await prisma.venue.create({ data });
+        const newVenue = await prisma.venue.create({
+            data,
+            include: {
+                renter: {
+                    select: {
+                        fullName: true,
+                        email: true,
+                    },
+                },
+                _count: {
+                    select: { fields: true },
+                },
+            },
+        });
+
         return newVenue;
     }
 
