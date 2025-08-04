@@ -83,3 +83,16 @@ export const canManageField = async (
         next(error);
     }
 };
+
+export const renterOnlyMiddleware = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const user = req.user;
+    if (user && user.role === "RENTER") {
+        next();
+    } else {
+        res.status(403).json({ message: "Forbidden: Requires Renter role" });
+    }
+};
