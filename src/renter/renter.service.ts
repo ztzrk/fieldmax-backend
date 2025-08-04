@@ -1,0 +1,15 @@
+import prisma from "../db";
+
+export class RenterService {
+    public async findMyVenues(renterId: string) {
+        return prisma.venue.findMany({
+            where: { renterId },
+            include: {
+                _count: {
+                    select: { fields: true },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+}
