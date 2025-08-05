@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { FieldsService } from "./fields.service";
-import { CreateFieldDto } from "./dtos/field.dto";
+import { CreateFieldDto, UpdateFieldDto } from "./dtos/field.dto";
 import { ScheduleOverrideDto } from "./dtos/override.dto";
 
 export class FieldsController {
@@ -32,7 +32,7 @@ export class FieldsController {
     public create = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const fieldData = req.body;
-            const data = await this.service.create(fieldData);
+            const data = await this.service.create(fieldData, req.user!);
             res.status(201).json({ data, message: "created" });
         } catch (error) {
             next(error);
@@ -42,8 +42,8 @@ export class FieldsController {
     public update = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const fieldData: CreateFieldDto = req.body;
-            const data = await this.service.update(id, fieldData);
+            const fieldData: UpdateFieldDto = req.body;
+            const data = await this.service.update(id, fieldData, req.user!);
             res.status(200).json({ data, message: "updated" });
         } catch (error) {
             next(error);
@@ -53,7 +53,7 @@ export class FieldsController {
     public delete = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const data = await this.service.delete(id);
+            const data = await this.service.delete(id, req.user!);
             res.status(200).json({ data, message: "deleted" });
         } catch (error) {
             next(error);
