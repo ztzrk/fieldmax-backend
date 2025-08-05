@@ -1,14 +1,14 @@
 import { Type } from "class-transformer";
 import {
-    IsArray,
+    IsString,
+    IsNotEmpty,
     IsOptional,
     IsUUID,
     IsNumber,
-    IsString,
-    IsNotEmpty,
     Min,
-    ValidateNested,
     Max,
+    ValidateNested,
+    IsArray,
 } from "class-validator";
 
 class ScheduleDto {
@@ -46,4 +46,36 @@ export class CreateFieldDto {
     @IsString()
     @IsOptional()
     description?: string;
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ScheduleDto)
+    @IsOptional()
+    schedules?: ScheduleDto[];
+}
+
+export class UpdateFieldDto {
+    @IsString()
+    @IsNotEmpty()
+    @IsOptional()
+    name?: string;
+
+    @IsUUID()
+    @IsOptional()
+    sportTypeId?: string;
+
+    @IsNumber()
+    @Min(0)
+    @IsOptional()
+    pricePerHour?: number;
+
+    @IsString()
+    @IsOptional()
+    description?: string;
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => ScheduleDto)
+    @IsOptional()
+    schedules?: ScheduleDto[];
 }
