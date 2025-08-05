@@ -1,6 +1,7 @@
+import { User } from "@prisma/client";
 import prisma from "../db";
 import { supabase } from "../lib/supabase";
-import { CreateFieldDto } from "./dtos/field.dto";
+import { CreateFieldDto, UpdateFieldDto } from "./dtos/field.dto";
 import { ScheduleOverrideDto } from "./dtos/override.dto";
 
 export class FieldsService {
@@ -41,31 +42,85 @@ export class FieldsService {
         if (!field) throw new Error("Field not found");
         return field;
     }
-    public async create(data: CreateFieldDto) {
-        const field = await prisma.field.create({ data });
-        return field;
-    }
 
-    public async update(id: string, data: CreateFieldDto) {
-        const updatedField = await prisma.field.update({
-            where: { id },
-            data,
+    public async create(data: CreateFieldDto, user: User) {
+        const venue = await prisma.venue.findUnique({
+            where: { id: data.venueId },
         });
-        return updatedField;
+        if (!venue) throw new Error("Venue not found.");
+
+        if (user.role === "RENTER" && venue.renterId !== user.id) {
+            throw new Error("Forbidden: You do not own this venue.");
+        }
+
+        const { schedules, ...fieldData } = data;
+
+        return prisma.$transaction(async (tx) => {
+            const newField = await tx.field.create({ data: fieldData });
+            if (schedules && schedules.length > 0) {
+                await tx.fieldSchedule.createMany({
+                    data: schedules.map((s) => ({
+                        ...s,
+                        fieldId: newField.id,
+                    })),
+                });
+            }
+            return newField;
+        });
     }
 
-    public async delete(id: string) {
-        try {
-            const deletedField = await prisma.field.delete({
-                where: { id },
-            });
-            return deletedField;
-        } catch (error) {
-            throw new Error(
-                "Failed to delete field. It might be in use by some schedules."
-            );
+    public async update(fieldId: string, data: UpdateFieldDto, user: User) {
+        const fieldToUpdate = await prisma.field.findUnique({
+            where: { id: fieldId },
+            select: { venue: { select: { renterId: true } } },
+        });
+        if (!fieldToUpdate) throw new Error("Field not found.");
+
+        if (
+            user.role === "RENTER" &&
+            fieldToUpdate.venue.renterId !== user.id
+        ) {
+            throw new Error("Forbidden: You do not own this field.");
         }
+
+        const { schedules, ...fieldData } = data;
+        return prisma.$transaction(async (tx) => {
+            const updatedField = await tx.field.update({
+                where: { id: fieldId },
+                data: fieldData,
+            });
+            if (schedules) {
+                await tx.fieldSchedule.deleteMany({
+                    where: { fieldId: fieldId },
+                });
+                await tx.fieldSchedule.createMany({
+                    data: schedules.map((s) => ({
+                        ...s,
+                        fieldId: updatedField.id,
+                    })),
+                });
+            }
+            return updatedField;
+        });
     }
+
+    public async delete(fieldId: string, user: User) {
+        const fieldToDelete = await prisma.field.findUnique({
+            where: { id: fieldId },
+            select: { venue: { select: { renterId: true } } },
+        });
+        if (!fieldToDelete) throw new Error("Field not found.");
+
+        if (
+            user.role === "RENTER" &&
+            fieldToDelete.venue.renterId !== user.id
+        ) {
+            throw new Error("Forbidden: You do not own this field.");
+        }
+
+        return prisma.field.delete({ where: { id: fieldId } });
+    }
+
     public async deleteMultiple(ids: string[]) {
         const deletedFields = await prisma.field.deleteMany({
             where: { id: { in: ids } },
