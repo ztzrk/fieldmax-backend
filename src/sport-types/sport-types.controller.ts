@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { SportTypesService } from "./sport-types.service";
-import { CreateSportTypeDto } from "./dtos/sport-type.dto";
+import { CreateSportTypeDto, UpdateSportTypeDto } from "./dtos/sport-type.dto";
 
 export class SportTypesController {
     public service = new SportTypesService();
@@ -27,7 +27,7 @@ export class SportTypesController {
     public update = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const sportTypeData: CreateSportTypeDto = req.body;
+            const sportTypeData: UpdateSportTypeDto = req.body;
             const data = await this.service.update(id, sportTypeData);
             res.status(200).json({ data, message: "updated" });
         } catch (error) {
