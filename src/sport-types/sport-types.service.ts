@@ -1,5 +1,5 @@
 import prisma from "../db";
-import { CreateSportTypeDto } from "./dtos/sport-type.dto";
+import { CreateSportTypeDto, UpdateSportTypeDto } from "./dtos/sport-type.dto";
 
 export class SportTypesService {
     public async findAll() {
@@ -24,7 +24,7 @@ export class SportTypesService {
         return newSportType;
     }
 
-    public async update(id: string, data: CreateSportTypeDto) {
+    public async update(id: string, data: UpdateSportTypeDto) {
         const updatedSportType = await prisma.sportType.update({
             where: { id },
             data,
