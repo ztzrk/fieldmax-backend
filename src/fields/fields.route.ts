@@ -3,7 +3,7 @@ import { FieldsController } from "./fields.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { adminOnlyMiddleware } from "../middleware/admin.middleware";
 import { validationMiddleware } from "../middleware/validation.middleware";
-import { CreateFieldDto } from "./dtos/field.dto";
+import { CreateFieldDto, UpdateFieldDto } from "./dtos/field.dto";
 import { canManageField } from "../middleware/permission.middleware";
 import { ScheduleOverrideDto } from "./dtos/override.dto";
 
@@ -30,7 +30,7 @@ export class FieldsRoute {
             `${this.path}/:id`,
             authMiddleware,
             canManageField,
-            validationMiddleware(CreateFieldDto, true),
+            validationMiddleware(UpdateFieldDto, true),
             this.controller.update
         );
         this.router.delete(
