@@ -9,3 +9,13 @@ export class CreateSportTypeDto {
     @IsNotEmpty()
     iconName!: string;
 }
+
+export class UpdateSportTypeDto {
+    @IsString()
+    @IsNotEmpty()
+    name!: string;
+
+    @IsString()
+    @IsNotEmpty()
+    iconName!: string;
+}
