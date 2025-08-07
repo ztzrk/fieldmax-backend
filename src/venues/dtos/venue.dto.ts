@@ -18,6 +18,20 @@ export class CreateVenueDto {
     renterId!: string;
 }
 
+export class UpdateVenueDto {
+    @IsString()
+    @IsOptional()
+    name?: string;
+
+    @IsString()
+    @IsOptional()
+    address?: string;
+
+    @IsString()
+    @IsOptional()
+    description?: string;
+}
+
 export class RejectVenueDto {
     @IsString()
     @IsNotEmpty()
