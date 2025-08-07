@@ -1,6 +1,6 @@
 import { User } from "@prisma/client";
 import prisma from "../db";
-import { CreateVenueDto } from "./dtos/venue.dto";
+import { CreateVenueDto, UpdateVenueDto } from "./dtos/venue.dto";
 import e from "express";
 import { supabase } from "../lib/supabase";
 
@@ -136,7 +136,7 @@ export class VenuesService {
         return newVenue;
     }
 
-    public async update(id: string, data: CreateVenueDto) {
+    public async update(id: string, data: UpdateVenueDto) {
         const updatedVenue = await prisma.venue.update({
             where: { id },
             data,
