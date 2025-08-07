@@ -2,7 +2,11 @@ import { Router } from "express";
 import { VenuesController } from "./venues.controller";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { validationMiddleware } from "../middleware/validation.middleware";
-import { CreateVenueDto, RejectVenueDto } from "./dtos/venue.dto";
+import {
+    CreateVenueDto,
+    RejectVenueDto,
+    UpdateVenueDto,
+} from "./dtos/venue.dto";
 import {
     canManageVenue,
     isVenueOwner,
@@ -38,7 +42,7 @@ export class VenuesRoute {
             `${this.path}/:id`,
             authMiddleware,
             canManageVenue,
-            validationMiddleware(CreateVenueDto, true),
+            validationMiddleware(UpdateVenueDto, true),
             this.controller.update
         );
 
