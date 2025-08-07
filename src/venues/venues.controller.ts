@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { VenuesService } from "./venues.service";
-import { CreateVenueDto } from "./dtos/venue.dto";
+import { CreateVenueDto, UpdateVenueDto } from "./dtos/venue.dto";
 
 export class VenuesController {
     public service = new VenuesService();
@@ -49,7 +49,7 @@ export class VenuesController {
     public update = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id } = req.params;
-            const venueData: CreateVenueDto = req.body;
+            const venueData: UpdateVenueDto = req.body;
             const data = await this.service.update(id, venueData);
             res.status(200).json({ data, message: "updated" });
         } catch (error) {
