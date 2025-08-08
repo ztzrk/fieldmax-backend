@@ -3,6 +3,7 @@ import prisma from "../db";
 import { supabase } from "../lib/supabase";
 import { CreateFieldDto, UpdateFieldDto } from "./dtos/field.dto";
 import { ScheduleOverrideDto } from "./dtos/override.dto";
+import { GetAvailabilityDto } from "./dtos/availability.dtos";
 
 export class FieldsService {
     public async findAll() {
@@ -198,5 +199,73 @@ export class FieldsService {
         return prisma.fieldPhoto.delete({
             where: { id: photoId },
         });
+    }
+
+    public async getAvailability(fieldId: string, query: GetAvailabilityDto) {
+        const requestedDate = new Date(query.date);
+        const dayOfWeek =
+            requestedDate.getUTCDay() === 0 ? 7 : requestedDate.getUTCDay();
+
+        const override = await prisma.scheduleOverride.findFirst({
+            where: {
+                fieldId: fieldId,
+                overrideDate: requestedDate,
+            },
+        });
+
+        let openTimeStr: Date | null = null;
+        let closeTimeStr: Date | null = null;
+        let isClosed = false;
+
+        if (override) {
+            if (override.isClosed) {
+                isClosed = true;
+            } else {
+                openTimeStr = override.openTime;
+                closeTimeStr = override.closeTime;
+            }
+        } else {
+            const regularSchedules = await prisma.fieldSchedule.findMany({
+                where: { fieldId: fieldId, dayOfWeek: dayOfWeek },
+            });
+            if (regularSchedules.length > 0) {
+                openTimeStr = regularSchedules[0].openTime;
+                closeTimeStr = regularSchedules[0].closeTime;
+            } else {
+                isClosed = true;
+            }
+        }
+
+        if (isClosed || !openTimeStr || !closeTimeStr) {
+            return [];
+        }
+
+        const possibleSlots = [];
+        const openHour = openTimeStr.getUTCHours();
+        const closeHour = closeTimeStr.getUTCHours();
+        for (let hour = openHour; hour < closeHour; hour++) {
+            possibleSlots.push(`${hour.toString().padStart(2, "0")}:00`);
+        }
+
+        const bookings = await prisma.booking.findMany({
+            where: {
+                fieldId: fieldId,
+                bookingDate: requestedDate,
+                status: "CONFIRMED",
+            },
+            select: {
+                startTime: true,
+            },
+        });
+
+        const bookedSlots = new Set(
+            bookings.map((b) => b.startTime.toISOString().substring(0, 5))
+        );
+
+        const availableSlots = possibleSlots.filter(
+            (slot) => !bookedSlots.has(slot)
+        );
+
+        return availableSlots;
     }
 }
