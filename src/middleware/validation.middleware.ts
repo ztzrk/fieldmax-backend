@@ -5,7 +5,8 @@ import { validate, ValidationError } from "class-validator";
 
 export const validationMiddleware = (
     type: any,
-    skipMissingProperties = false
+    skipMissingProperties = false,
+    validateQuery = false
 ): RequestHandler => {
     return (req: Request, res: Response, next: NextFunction) => {
         const dto = plainToInstance(type, req.body);
