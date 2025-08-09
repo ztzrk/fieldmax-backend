@@ -6,6 +6,7 @@ import { validationMiddleware } from "../middleware/validation.middleware";
 import { CreateFieldDto, UpdateFieldDto } from "./dtos/field.dto";
 import { canManageField } from "../middleware/permission.middleware";
 import { ScheduleOverrideDto } from "./dtos/override.dto";
+import { GetAvailabilityDto } from "./dtos/availability.dtos";
 
 export class FieldsRoute {
     public path = "/fields";
@@ -72,6 +73,11 @@ export class FieldsRoute {
             authMiddleware,
             canManageField,
             this.controller.deletePhoto
+        );
+        this.router.get(
+            `${this.path}/:fieldId/availability`,
+            validationMiddleware(GetAvailabilityDto, true, true),
+            this.controller.getAvailability
         );
     }
 }
