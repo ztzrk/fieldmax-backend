@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { FieldsService } from "./fields.service";
 import { CreateFieldDto, UpdateFieldDto } from "./dtos/field.dto";
 import { ScheduleOverrideDto } from "./dtos/override.dto";
+import { GetAvailabilityDto } from "./dtos/availability.dtos";
 
 export class FieldsController {
     public service = new FieldsService();
@@ -127,6 +128,20 @@ export class FieldsController {
             const { photoId } = req.params;
             const data = await this.service.deletePhoto(photoId);
             res.status(200).json({ data, message: "deleted photo" });
+        } catch (error) {
+            next(error);
+        }
+    };
+    public getAvailability = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { fieldId } = req.params;
+            const query: GetAvailabilityDto = req.query as any;
+            const data = await this.service.getAvailability(fieldId, query);
+            res.status(200).json({ data });
         } catch (error) {
             next(error);
         }
