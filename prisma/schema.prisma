@@ -62,16 +62,21 @@ model User {
   venues   Venue[]
   bookings Booking[]
   sessions Session[]
+  Review   Review[]
 
   @@map("users")
 }
 
 model UserProfile {
-  userId            String   @id @map("user_id")
-  profilePictureUrl String?  @map("profile_picture_url")
-  bio               String?
-  address           String?
-  updatedAt         DateTime @default(now()) @map("updated_at")
+  userId             String   @id @map("user_id")
+  profilePictureUrl  String?  @map("profile_picture_url")
+  bio                String?
+  address            String?
+  updatedAt          DateTime @default(now()) @map("updated_at")
+  companyName        String?  @map("company_name")
+  companyLogoUrl     String?  @map("company_logo_url")
+  companyWebsite     String?  @map("company_website")
+  companyDescription String?  @map("company_description")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -133,6 +138,7 @@ model Field {
   scheduleOverrides ScheduleOverride[]
   bookings          Booking[]
   photos            FieldPhoto[]
+  Review            Review[]
 
   @@map("fields")
 }
@@ -192,4 +198,18 @@ model Booking {
   field Field @relation(fields: [fieldId], references: [id])
 
   @@map("bookings")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String?
+  userId    String
+  fieldId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  field Field @relation(fields: [fieldId], references: [id])
+
+  @@map("reviews")
 }
