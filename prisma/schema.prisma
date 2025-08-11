@@ -38,16 +38,6 @@ enum VerificationStatus {
   REJECTED
 }
 
-model Session {
-  id        String   @id
-  userId    String   @map("user_id")
-  expiresAt DateTime @map("expires_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("sessions")
-}
-
 // Models
 model User {
   id          String   @id @default(uuid())
@@ -60,9 +50,13 @@ model User {
 
   profile  UserProfile?
   venues   Venue[]
-  bookings Booking[]
   sessions Session[]
-  Review   Review[]
+
+  initiatedConversations Conversation[] @relation("UserConversations")
+  receivedConversations  Conversation[] @relation("RenterConversations")
+  sentMessages           Message[]
+  reviews                Review[]
+  bookings               Booking[]
 
   @@map("users")
 }
@@ -103,9 +97,10 @@ model Venue {
   rejectionReason String?            @map("rejection_reason")
   createdAt       DateTime           @default(now()) @map("created_at")
 
-  renter User         @relation(fields: [renterId], references: [id], onDelete: Cascade)
-  fields Field[]
-  photos VenuePhoto[]
+  renter       User           @relation(fields: [renterId], references: [id], onDelete: Cascade)
+  fields       Field[]
+  photos       VenuePhoto[]
+  Conversation Conversation[]
 
   @@map("venues")
 }
@@ -126,9 +121,9 @@ model Field {
   id           String             @id @default(uuid())
   venueId      String             @map("venue_id")
   sportTypeId  String             @map("sport_type_id")
-  name         String             @map("name")
+  name         String
   description  String?
-  pricePerHour Float              @default(0) @map("price_per_hour")
+  pricePerHour Float              @map("price_per_hour")
   createdAt    DateTime           @default(now()) @map("created_at")
   status       VerificationStatus @default(PENDING)
 
@@ -136,9 +131,10 @@ model Field {
   sportType         SportType          @relation(fields: [sportTypeId], references: [id])
   schedules         FieldSchedule[]
   scheduleOverrides ScheduleOverride[]
-  bookings          Booking[]
   photos            FieldPhoto[]
-  Review            Review[]
+  reviews           Review[]
+  bookings          Booking[]
+  conversations     Conversation[]
 
   @@map("fields")
 }
@@ -212,4 +208,47 @@ model Review {
   field Field @relation(fields: [fieldId], references: [id])
 
   @@map("reviews")
+}
+
+model Session {
+  id        String   @id
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  renterId  String   @map("renter_id")
+  venueId   String   @map("venue_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user     User      @relation("UserConversations", fields: [userId], references: [id], onDelete: Cascade)
+  renter   User      @relation("RenterConversations", fields: [renterId], references: [id], onDelete: Cascade)
+  venue    Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  messages Message[]
+  Field    Field?    @relation(fields: [fieldId], references: [id])
+  fieldId  String?
+
+  @@unique([userId, renterId, venueId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  conversationId String   @map("conversation_id")
+  senderId       String   @map("sender_id")
+  content        String   @db.Text
+  isRead         Boolean  @default(false) @map("is_read")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
 }
