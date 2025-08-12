@@ -97,10 +97,9 @@ model Venue {
   rejectionReason String?            @map("rejection_reason")
   createdAt       DateTime           @default(now()) @map("created_at")
 
-  renter       User           @relation(fields: [renterId], references: [id], onDelete: Cascade)
-  fields       Field[]
-  photos       VenuePhoto[]
-  Conversation Conversation[]
+  renter User         @relation(fields: [renterId], references: [id], onDelete: Cascade)
+  fields Field[]
+  photos VenuePhoto[]
 
   @@map("venues")
 }
@@ -224,18 +223,17 @@ model Conversation {
   id        String   @id @default(uuid())
   userId    String   @map("user_id")
   renterId  String   @map("renter_id")
-  venueId   String   @map("venue_id")
+  fieldId   String   @map("field_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   user     User      @relation("UserConversations", fields: [userId], references: [id], onDelete: Cascade)
   renter   User      @relation("RenterConversations", fields: [renterId], references: [id], onDelete: Cascade)
-  venue    Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  field    Field     @relation(fields: [fieldId], references: [id], onDelete: Cascade)
   messages Message[]
-  Field    Field?    @relation(fields: [fieldId], references: [id])
-  fieldId  String?
+  venueId  String?
 
-  @@unique([userId, renterId, venueId])
+  @@unique([userId, fieldId])
   @@map("conversations")
 }
 
