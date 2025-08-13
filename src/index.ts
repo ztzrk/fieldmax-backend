@@ -11,6 +11,7 @@ import { VenuesRoute } from "./venues/venues.route";
 import { FieldsRoute } from "./fields/fields.route";
 import { UploadsRoute } from "./uploads/uploads.route";
 import { RenterRoute } from "./renter/renter.route";
+import { ChatRoute } from "./chat/chat.route";
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
@@ -32,6 +33,7 @@ const venuesRoute = new VenuesRoute();
 const fieldsRoute = new FieldsRoute();
 const uploadsRoute = new UploadsRoute();
 const renterRoute = new RenterRoute();
+const chatRoute = new ChatRoute();
 
 app.use("/api", authRoute.router);
 app.use("/api", usersRoute.router);
@@ -40,6 +42,7 @@ app.use("/api", venuesRoute.router);
 app.use("/api", uploadsRoute.router);
 app.use("/api", fieldsRoute.router);
 app.use("/api", renterRoute.router);
+app.use("/api", chatRoute.router);
 
 // Simple test route
 app.get("/", (req: Request, res: Response) => {
