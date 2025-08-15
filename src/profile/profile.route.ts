@@ -1,0 +1,24 @@
+import { Router } from "express";
+import { ProfileController } from "./profile.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
+import { validationMiddleware } from "../middleware/validation.middleware";
+import { UpdateProfileDto } from "./dtos/update-profile.dto";
+
+export class ProfileRoute {
+    public path = "/profile";
+    public router = Router();
+    public controller = new ProfileController();
+
+    constructor() {
+        this.initializeRoutes();
+    }
+
+    private initializeRoutes() {
+        this.router.patch(
+            `${this.path}/me`,
+            authMiddleware,
+            validationMiddleware(UpdateProfileDto, true),
+            this.controller.updateProfile
+        );
+    }
+}
