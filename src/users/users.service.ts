@@ -1,11 +1,10 @@
 // src/users/users.service.ts
-import { User } from "@prisma/client";
+import { User, Prisma } from "@prisma/client";
 import { UpdateUserDto } from "./dtos/user.dto";
 import { RegisterUserDto } from "../auth/dtos/register-user.dto";
 import prisma from "../db";
 import * as bcrypt from "bcryptjs";
 
-// Helper function to exclude keys from an object
 function exclude<User, Key extends keyof User>(
     user: User,
     keys: Key[]
@@ -17,9 +16,33 @@ function exclude<User, Key extends keyof User>(
 }
 
 export class UserService {
-    public async findAllUsers(): Promise<Omit<User, "password">[]> {
-        const users = await prisma.user.findMany();
-        return users.map((user) => exclude(user, ["password"]));
+    public async findAllUsers(query: { search?: string }) {
+        const { search } = query;
+
+        const whereCondition: Prisma.UserWhereInput = search
+            ? {
+                  OR: [
+                      { fullName: { contains: search, mode: "insensitive" } },
+                      { email: { contains: search, mode: "insensitive" } },
+                  ],
+              }
+            : {};
+
+        const users = await prisma.user.findMany({
+            where: whereCondition,
+            select: {
+                id: true,
+                fullName: true,
+                email: true,
+                role: true,
+                createdAt: true,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        });
+
+        return users;
     }
 
     public async findUserById(
