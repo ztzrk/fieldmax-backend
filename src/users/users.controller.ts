@@ -20,13 +20,15 @@ export class UsersController {
             next(error);
         }
     };
+
     public getUsers = async (
         req: Request,
         res: Response,
         next: NextFunction
-    ): Promise<void> => {
+    ) => {
         try {
-            const allUsers = await this.userService.findAllUsers();
+            const query = req.query;
+            const allUsers = await this.userService.findAllUsers(query);
             res.status(200).json({ data: allUsers, message: "findAll" });
         } catch (error) {
             next(error);
