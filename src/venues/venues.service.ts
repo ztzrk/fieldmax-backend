@@ -1,12 +1,24 @@
-import { User } from "@prisma/client";
+import { User, Prisma } from "@prisma/client";
 import prisma from "../db";
 import { CreateVenueDto, UpdateVenueDto } from "./dtos/venue.dto";
 import e from "express";
 import { supabase } from "../lib/supabase";
 
 export class VenuesService {
-    public async findAllAdmin() {
+    public async findAllAdmin(query: { search?: string }) {
+        const { search } = query;
+
+        const whereCondition: Prisma.VenueWhereInput = search
+            ? {
+                  name: {
+                      contains: search,
+                      mode: "insensitive",
+                  },
+              }
+            : {};
+
         const venues = await prisma.venue.findMany({
+            where: whereCondition,
             include: {
                 renter: {
                     select: {
@@ -14,20 +26,39 @@ export class VenuesService {
                         email: true,
                     },
                 },
+                _count: {
+                    select: { fields: true },
+                },
             },
         });
         return venues;
     }
 
-    public async findAllForRenter(renterId: string) {
+    public async findAllForRenter(
+        renterId: string,
+        query: { search?: string }
+    ) {
+        const { search } = query;
+
+        const whereCondition: Prisma.VenueWhereInput = {
+            renterId: renterId,
+            AND: search
+                ? [
+                      {
+                          name: {
+                              contains: search,
+                              mode: "insensitive",
+                          },
+                      },
+                  ]
+                : [],
+        };
+
         const venues = await prisma.venue.findMany({
-            where: { renterId },
+            where: whereCondition,
             include: {
-                renter: {
-                    select: {
-                        fullName: true,
-                        email: true,
-                    },
+                _count: {
+                    select: { fields: true },
                 },
             },
         });
