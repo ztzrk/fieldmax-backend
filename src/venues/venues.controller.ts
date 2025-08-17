@@ -8,10 +8,13 @@ export class VenuesController {
     public getAll = async (req: Request, res: Response, next: NextFunction) => {
         try {
             if (req.user && req.user.role === "ADMIN") {
-                const data = await this.service.findAllAdmin();
+                const data = await this.service.findAllAdmin(req.query);
                 res.status(200).json({ data, message: "findAllAdmin" });
             } else if (req.user && req.user.role === "RENTER") {
-                const data = await this.service.findAllForRenter(req.user.id);
+                const data = await this.service.findAllForRenter(
+                    req.user.id,
+                    req.query
+                );
                 res.status(200).json({ data, message: "findAllForRenter" });
             } else {
                 const data = await this.service.findAllPublic();
