@@ -9,7 +9,7 @@ export class FieldsController {
 
     public getAll = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const data = await this.service.findAll();
+            const data = await this.service.findAll(req.query);
             res.status(200).json({ data, message: "findAll" });
         } catch (error) {
             next(error);
