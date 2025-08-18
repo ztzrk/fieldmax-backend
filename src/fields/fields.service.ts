@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import prisma from "../db";
 import { supabase } from "../lib/supabase";
 import { CreateFieldDto, UpdateFieldDto } from "./dtos/field.dto";
@@ -6,8 +6,19 @@ import { ScheduleOverrideDto } from "./dtos/override.dto";
 import { GetAvailabilityDto } from "./dtos/availability.dtos";
 
 export class FieldsService {
-    public async findAll() {
+    public async findAll(query: { search?: string }) {
+        const { search } = query;
+        const whereCondition: Prisma.FieldWhereInput = search
+            ? {
+                  name: {
+                      contains: search,
+                      mode: "insensitive",
+                  },
+              }
+            : {};
+
         const fields = await prisma.field.findMany({
+            where: whereCondition,
             select: {
                 id: true,
                 name: true,
