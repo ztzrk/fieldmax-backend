@@ -6,6 +6,7 @@ import { validationMiddleware } from "../middleware/validation.middleware";
 import { UpdateUserDto } from "./dtos/user.dto";
 import { RegisterUserDto } from "../auth/dtos/register-user.dto";
 import { adminOnlyMiddleware } from "../middleware/admin.middleware";
+import { PaginationDto } from "../dtos/pagination.dto";
 
 export class UsersRoute {
     public path = "/users";
@@ -25,13 +26,22 @@ export class UsersRoute {
             this.usersController.createUser
         );
 
-        this.router.get(`${this.path}`, this.usersController.getUsers);
+        this.router.get(
+            `${this.path}`,
+            authMiddleware,
+            adminOnlyMiddleware,
+            validationMiddleware(PaginationDto, true, true),
+            this.usersController.getUsers
+        );
+
         this.router.get(`${this.path}/:id`, this.usersController.getUserById);
+
         this.router.put(
             `${this.path}/:id`,
             validationMiddleware(UpdateUserDto),
             this.usersController.updateUser
         );
+
         this.router.delete(`${this.path}/:id`, this.usersController.deleteUser);
 
         this.router.post(
