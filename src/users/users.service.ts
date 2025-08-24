@@ -4,6 +4,7 @@ import { UpdateUserDto } from "./dtos/user.dto";
 import { RegisterUserDto } from "../auth/dtos/register-user.dto";
 import prisma from "../db";
 import * as bcrypt from "bcryptjs";
+import { PaginationDto } from "../dtos/pagination.dto";
 
 function exclude<User, Key extends keyof User>(
     user: User,
@@ -16,8 +17,9 @@ function exclude<User, Key extends keyof User>(
 }
 
 export class UserService {
-    public async findAllUsers(query: { search?: string }) {
-        const { search } = query;
+    public async findAllUsers(query: PaginationDto) {
+        const { page = 1, limit = 10, search } = query;
+        const skip = (page - 1) * limit;
 
         const whereCondition: Prisma.UserWhereInput = search
             ? {
@@ -28,21 +30,34 @@ export class UserService {
               }
             : {};
 
-        const users = await prisma.user.findMany({
-            where: whereCondition,
-            select: {
-                id: true,
-                fullName: true,
-                email: true,
-                role: true,
-                createdAt: true,
-            },
-            orderBy: {
-                createdAt: "desc",
-            },
-        });
+        const [users, total] = await prisma.$transaction([
+            prisma.user.findMany({
+                where: whereCondition,
+                select: {
+                    id: true,
+                    fullName: true,
+                    email: true,
+                    role: true,
+                    createdAt: true,
+                },
+                skip: skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+            }),
+            prisma.user.count({ where: whereCondition }),
+        ]);
 
-        return users;
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            data: users,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages,
+            },
+        };
     }
 
     public async findUserById(
