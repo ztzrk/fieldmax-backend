@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { UserService } from "./users.service";
 import { UpdateUserDto } from "./dtos/user.dto";
 import { RegisterUserDto } from "../auth/dtos/register-user.dto";
+import { PaginationDto } from "../dtos/pagination.dto";
 
 export class UsersController {
     public userService = new UserService();
@@ -27,7 +28,7 @@ export class UsersController {
         next: NextFunction
     ) => {
         try {
-            const query = req.query;
+            const query: PaginationDto = req.query;
             const allUsers = await this.userService.findAllUsers(query);
             res.status(200).json({ data: allUsers, message: "findAll" });
         } catch (error) {
