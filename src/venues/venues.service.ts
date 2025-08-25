@@ -3,10 +3,12 @@ import prisma from "../db";
 import { CreateVenueDto, UpdateVenueDto } from "./dtos/venue.dto";
 import e from "express";
 import { supabase } from "../lib/supabase";
+import { PaginationDto } from "../dtos/pagination.dto";
 
 export class VenuesService {
-    public async findAllAdmin(query: { search?: string }) {
-        const { search } = query;
+    public async findAllAdmin(query: PaginationDto) {
+        const { page = 1, limit = 10, search } = query;
+        const skip = (page - 1) * limit;
 
         const whereCondition: Prisma.VenueWhereInput = search
             ? {
@@ -17,28 +19,35 @@ export class VenuesService {
               }
             : {};
 
-        const venues = await prisma.venue.findMany({
-            where: whereCondition,
-            include: {
-                renter: {
-                    select: {
-                        fullName: true,
-                        email: true,
+        const [venues, total] = [
+            await prisma.venue.findMany({
+                where: whereCondition,
+                include: {
+                    renter: {
+                        select: {
+                            fullName: true,
+                            email: true,
+                        },
+                    },
+                    _count: {
+                        select: { fields: true },
                     },
                 },
-                _count: {
-                    select: { fields: true },
-                },
-            },
-        });
-        return venues;
+                skip: skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+            }),
+            await prisma.venue.count({ where: whereCondition }),
+        ];
+
+        const totalPages = Math.ceil(total / limit);
+
+        return { data: venues, meta: { total, page, limit, totalPages } };
     }
 
-    public async findAllForRenter(
-        renterId: string,
-        query: { search?: string }
-    ) {
-        const { search } = query;
+    public async findAllForRenter(renterId: string, query: PaginationDto) {
+        const { page = 1, limit = 10, search } = query;
+        const skip = (page - 1) * limit;
 
         const whereCondition: Prisma.VenueWhereInput = {
             renterId: renterId,
@@ -54,15 +63,23 @@ export class VenuesService {
                 : [],
         };
 
-        const venues = await prisma.venue.findMany({
-            where: whereCondition,
-            include: {
-                _count: {
-                    select: { fields: true },
+        const [venues, total] = [
+            await prisma.venue.findMany({
+                where: whereCondition,
+                include: {
+                    _count: {
+                        select: { fields: true },
+                    },
                 },
-            },
-        });
-        return venues;
+                skip: skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+            }),
+            await prisma.venue.count({ where: whereCondition }),
+        ];
+        const totalPages = Math.ceil(total / limit);
+
+        return { data: venues, meta: { total, page, limit, totalPages } };
     }
 
     public async findAllPublic() {
