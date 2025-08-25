@@ -12,6 +12,7 @@ import {
     isVenueOwner,
 } from "../middleware/permission.middleware";
 import { adminOnlyMiddleware } from "../middleware/admin.middleware";
+import { PaginationDto } from "../dtos/pagination.dto";
 
 export class VenuesRoute {
     public path = "/venues";
@@ -23,7 +24,13 @@ export class VenuesRoute {
     }
 
     private initializeRoutes() {
-        this.router.get(`${this.path}`, authMiddleware, this.controller.getAll);
+        this.router.get(
+            `${this.path}`,
+            authMiddleware,
+            validationMiddleware(PaginationDto, true, true),
+            this.controller.getAll
+        );
+
         this.router.get(
             `${this.path}/:id`,
             authMiddleware,
