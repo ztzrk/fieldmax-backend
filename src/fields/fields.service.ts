@@ -4,10 +4,13 @@ import { supabase } from "../lib/supabase";
 import { CreateFieldDto, UpdateFieldDto } from "./dtos/field.dto";
 import { ScheduleOverrideDto } from "./dtos/override.dto";
 import { GetAvailabilityDto } from "./dtos/availability.dtos";
+import { PaginationDto } from "../dtos/pagination.dto";
 
 export class FieldsService {
-    public async findAll(query: { search?: string }) {
-        const { search } = query;
+    public async findAll(query: PaginationDto) {
+        const { page = 1, limit = 10, search } = query;
+        const skip = (page - 1) * limit;
+
         const whereCondition: Prisma.FieldWhereInput = search
             ? {
                   name: {
@@ -17,32 +20,46 @@ export class FieldsService {
               }
             : {};
 
-        const fields = await prisma.field.findMany({
-            where: whereCondition,
-            select: {
-                id: true,
-                name: true,
-                pricePerHour: true,
-                status: true,
-                sportType: {
-                    select: {
-                        name: true,
+        const [fields, total] = [
+            await prisma.field.findMany({
+                where: whereCondition,
+                select: {
+                    id: true,
+                    name: true,
+                    pricePerHour: true,
+                    status: true,
+                    sportType: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                    venue: {
+                        select: {
+                            name: true,
+                        },
                     },
                 },
-                venue: {
-                    select: {
-                        name: true,
+                orderBy: {
+                    venue: {
+                        name: "asc",
                     },
                 },
+            }),
+            await prisma.field.count({ where: whereCondition }),
+        ];
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            data: fields,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages,
             },
-            orderBy: {
-                venue: {
-                    name: "asc",
-                },
-            },
-        });
-        return fields;
+        };
     }
+
     public async findById(id: string) {
         const field = await prisma.field.findUnique({
             where: { id },
