@@ -78,4 +78,11 @@ export class BookingsService {
             return { booking: newBooking, snapToken: transactionToken };
         });
     }
+
+    public async confirmBooking(bookingId: string) {
+        return prisma.booking.update({
+            where: { id: bookingId },
+            data: { status: "CONFIRMED" },
+        });
+    }
 }
