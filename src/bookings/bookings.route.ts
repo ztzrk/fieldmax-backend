@@ -14,11 +14,21 @@ export class BookingsRoute {
     }
 
     private initializeRoutes() {
+        this.router.get(
+            `${this.path}`,
+            authMiddleware,
+            this.controller.findAll
+        );
         this.router.post(
             `${this.path}`,
             authMiddleware,
             validationMiddleware(CreateBookingDto),
             this.controller.create
+        );
+        this.router.post(
+            `${this.path}/:bookingId/confirm`,
+            authMiddleware,
+            this.controller.confirmBooking
         );
     }
 }
