@@ -49,4 +49,21 @@ export class BookingsController {
             next(error);
         }
     };
+
+    public cancelBooking = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { bookingId } = req.params;
+            const data = await this.service.cancelBooking(bookingId);
+            res.status(200).json({
+                data,
+                message: "Booking canceled.",
+            });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
