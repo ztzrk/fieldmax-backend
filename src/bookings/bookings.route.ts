@@ -30,5 +30,10 @@ export class BookingsRoute {
             authMiddleware,
             this.controller.confirmBooking
         );
+        this.router.post(
+            `${this.path}/:bookingId/cancel`,
+            authMiddleware,
+            this.controller.cancelBooking
+        );
     }
 }
