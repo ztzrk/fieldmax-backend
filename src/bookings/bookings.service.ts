@@ -40,6 +40,12 @@ export class BookingsService {
         return { data: bookings, meta: { total, page, limit, totalPages } };
     }
 
+    public async findBookingById(bookingId: string) {
+        return prisma.booking.findUnique({
+            where: { id: bookingId },
+        });
+    }
+
     public async createBooking(data: CreateBookingDto, user: User) {
         const field = await prisma.field.findUnique({
             where: { id: data.fieldId },
