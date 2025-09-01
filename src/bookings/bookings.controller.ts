@@ -19,6 +19,20 @@ export class BookingsController {
         }
     };
 
+    public findOne = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const { bookingId } = req.params;
+            const data = await this.service.findBookingById(bookingId);
+            res.status(200).json(data);
+        } catch (error) {
+            next(error);
+        }
+    };
+
     public create = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const bookingData: CreateBookingDto = req.body;
