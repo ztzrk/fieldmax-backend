@@ -19,6 +19,11 @@ export class BookingsRoute {
             authMiddleware,
             this.controller.findAll
         );
+        this.router.get(
+            `${this.path}/:bookingId`,
+            authMiddleware,
+            this.controller.findOne
+        );
         this.router.post(
             `${this.path}`,
             authMiddleware,
