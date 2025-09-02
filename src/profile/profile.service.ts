@@ -25,4 +25,10 @@ export class ProfileService {
             return updatedProfile;
         });
     }
+
+    public async getProfile(userId: string) {
+        return prisma.userProfile.findUnique({
+            where: { userId },
+        });
+    }
 }
