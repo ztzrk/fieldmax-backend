@@ -31,4 +31,11 @@ export class ProfileService {
             where: { userId },
         });
     }
+
+    public async changePassword(userId: string, newPassword: string) {
+        return prisma.user.update({
+            where: { id: userId },
+            data: { password: newPassword },
+        });
+    }
 }
