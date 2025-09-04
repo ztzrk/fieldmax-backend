@@ -19,4 +19,18 @@ export class ProfileController {
             next(error);
         }
     };
+
+    public getProfile = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const userId = req.user!.id;
+            const data = await this.service.getProfile(userId);
+            res.status(200).json({ data, message: "Profile fetched" });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
