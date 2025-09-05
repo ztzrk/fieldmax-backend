@@ -33,4 +33,19 @@ export class ProfileController {
             next(error);
         }
     };
+
+    public changePassword = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const userId = req.user!.id;
+            const { newPassword } = req.body;
+            await this.service.changePassword(userId, newPassword);
+            res.status(200).json({ message: "Password changed" });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
