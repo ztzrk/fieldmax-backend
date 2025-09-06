@@ -20,5 +20,15 @@ export class ProfileRoute {
             validationMiddleware(UpdateProfileDto, true),
             this.controller.updateProfile
         );
+        this.router.get(
+            `${this.path}/me`,
+            authMiddleware,
+            this.controller.getProfile
+        );
+        this.router.patch(
+            `${this.path}/change-password`,
+            authMiddleware,
+            this.controller.changePassword
+        );
     }
 }
