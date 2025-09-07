@@ -12,4 +12,15 @@ export class RenterService {
             orderBy: { createdAt: "desc" },
         });
     }
+
+    public async findMyVenueById(renterId: string, venueId: string) {
+        return prisma.venue.findFirst({
+            where: { id: venueId, renterId },
+            include: {
+                _count: {
+                    select: { fields: true },
+                },
+            },
+        });
+    }
 }
