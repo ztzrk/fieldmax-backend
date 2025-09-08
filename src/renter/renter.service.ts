@@ -23,4 +23,24 @@ export class RenterService {
             },
         });
     }
+
+    public async findMyBookings(renterId: string) {
+        return prisma.booking.findMany({
+            where: {
+                field: {
+                    venue: {
+                        renterId,
+                    },
+                },
+            },
+            include: {
+                field: {
+                    include: {
+                        venue: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    }
 }
