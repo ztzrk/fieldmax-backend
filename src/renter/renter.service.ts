@@ -43,4 +43,24 @@ export class RenterService {
             orderBy: { createdAt: "desc" },
         });
     }
+
+    public async findMyBookingById(renterId: string, bookingId: string) {
+        return prisma.booking.findFirst({
+            where: {
+                id: bookingId,
+                field: {
+                    venue: {
+                        renterId,
+                    },
+                },
+            },
+            include: {
+                field: {
+                    include: {
+                        venue: true,
+                    },
+                },
+            },
+        });
+    }
 }
