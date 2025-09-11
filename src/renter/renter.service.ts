@@ -70,4 +70,11 @@ export class RenterService {
             data: { status: "CONFIRMED" },
         });
     }
+
+    public async cancelBooking(bookingId: string) {
+        return prisma.booking.update({
+            where: { id: bookingId },
+            data: { status: "CANCELLED" },
+        });
+    }
 }
