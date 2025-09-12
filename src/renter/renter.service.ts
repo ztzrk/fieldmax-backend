@@ -77,4 +77,11 @@ export class RenterService {
             data: { status: "CANCELLED" },
         });
     }
+
+    public async completeBooking(bookingId: string) {
+        return prisma.booking.update({
+            where: { id: bookingId },
+            data: { status: "COMPLETED" },
+        });
+    }
 }
