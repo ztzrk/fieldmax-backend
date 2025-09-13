@@ -84,4 +84,38 @@ export class RenterService {
             data: { status: "COMPLETED" },
         });
     }
+
+    public async findMyFields(renterId: string) {
+        return prisma.field.findMany({
+            where: {
+                venue: {
+                    renterId,
+                },
+            },
+            include: {
+                venue: true,
+                _count: {
+                    select: { bookings: true },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    }
+
+    public async findMyFieldById(renterId: string, fieldId: string) {
+        return prisma.field.findFirst({
+            where: {
+                id: fieldId,
+                venue: {
+                    renterId,
+                },
+            },
+            include: {
+                venue: true,
+                _count: {
+                    select: { bookings: true },
+                },
+            },
+        });
+    }
 }
