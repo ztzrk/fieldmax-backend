@@ -118,4 +118,16 @@ export class RenterService {
             },
         });
     }
+
+    public async countMyBookings(renterId: string) {
+        return prisma.booking.count({
+            where: {
+                field: {
+                    venue: {
+                        renterId,
+                    },
+                },
+            },
+        });
+    }
 }
