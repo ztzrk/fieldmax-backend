@@ -130,4 +130,14 @@ export class RenterService {
             },
         });
     }
+
+    public async countMyFields(renterId: string) {
+        return prisma.field.count({
+            where: {
+                venue: {
+                    renterId,
+                },
+            },
+        });
+    }
 }
