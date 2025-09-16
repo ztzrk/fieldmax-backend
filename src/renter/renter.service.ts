@@ -140,4 +140,33 @@ export class RenterService {
             },
         });
     }
+
+    public async findMyVenuesWithPagination(
+        renterId: string,
+        page: number,
+        pageSize: number
+    ) {
+        const venues = await prisma.venue.findMany({
+            where: { renterId },
+            include: {
+                _count: {
+                    select: { fields: true },
+                },
+            },
+            orderBy: { createdAt: "desc" },
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+        });
+
+        const totalCount = await prisma.venue.count({
+            where: { renterId },
+        });
+
+        return {
+            venues,
+            totalCount,
+            currentPage: page,
+            totalPages: Math.ceil(totalCount / pageSize),
+        };
+    }
 }
