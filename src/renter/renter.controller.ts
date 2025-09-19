@@ -49,4 +49,25 @@ export class RenterController {
             next(error);
         }
     };
+
+    public getMyBookingById = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const renterId = req.user!.id;
+            const bookingId = req.params.id;
+            const data = await this.service.findMyBookingById(
+                renterId,
+                bookingId
+            );
+            if (!data) {
+                return res.status(404).json({ message: "Booking not found" });
+            }
+            res.status(200).json({ data });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
