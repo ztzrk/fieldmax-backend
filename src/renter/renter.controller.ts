@@ -70,4 +70,18 @@ export class RenterController {
             next(error);
         }
     };
+
+    public confirmBooking = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const bookingId = req.params.id;
+            const data = await this.service.confirmBooking(bookingId);
+            res.status(200).json({ data });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
