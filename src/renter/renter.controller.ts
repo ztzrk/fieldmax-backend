@@ -84,4 +84,18 @@ export class RenterController {
             next(error);
         }
     };
+
+    public cancelBooking = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const bookingId = req.params.id;
+            const data = await this.service.cancelBooking(bookingId);
+            res.status(200).json({ data });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
