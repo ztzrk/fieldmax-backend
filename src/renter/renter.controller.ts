@@ -112,4 +112,18 @@ export class RenterController {
             next(error);
         }
     };
+
+    public getMyFields = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const renterId = req.user!.id;
+            const data = await this.service.findMyFields(renterId);
+            res.status(200).json({ data });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
