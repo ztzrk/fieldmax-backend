@@ -126,4 +126,22 @@ export class RenterController {
             next(error);
         }
     };
+
+    public getMyFieldById = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const renterId = req.user!.id;
+            const fieldId = req.params.id;
+            const data = await this.service.findMyFieldById(renterId, fieldId);
+            if (!data) {
+                return res.status(404).json({ message: "Field not found" });
+            }
+            res.status(200).json({ data });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
