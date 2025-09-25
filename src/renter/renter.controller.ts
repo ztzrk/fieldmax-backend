@@ -144,4 +144,18 @@ export class RenterController {
             next(error);
         }
     };
+
+    public countMyBookings = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const renterId = req.user!.id;
+            const count = await this.service.countMyBookings(renterId);
+            res.status(200).json({ count });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
