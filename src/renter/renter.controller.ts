@@ -158,4 +158,18 @@ export class RenterController {
             next(error);
         }
     };
+
+    public countMyFields = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const renterId = req.user!.id;
+            const count = await this.service.countMyFields(renterId);
+            res.status(200).json({ count });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
