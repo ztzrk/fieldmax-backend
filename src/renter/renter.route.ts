@@ -19,5 +19,12 @@ export class RenterRoute {
             renterOnlyMiddleware,
             this.controller.getMyVenues
         );
+
+        this.router.get(
+            `${this.path}/venues/:id`,
+            authMiddleware,
+            renterOnlyMiddleware,
+            this.controller.getMyVenueById
+        );
     }
 }
