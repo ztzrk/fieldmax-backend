@@ -28,7 +28,7 @@ export class RenterController {
             const venueId = req.params.id;
             const data = await this.service.findMyVenueById(renterId, venueId);
             if (!data) {
-                return res.status(404).json({ message: "Venue not found" });
+                res.status(404).json({ message: "Venue not found" });
             }
             res.status(200).json({ data });
         } catch (error) {
