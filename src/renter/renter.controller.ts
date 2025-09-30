@@ -63,7 +63,7 @@ export class RenterController {
                 bookingId
             );
             if (!data) {
-                return res.status(404).json({ message: "Booking not found" });
+                res.status(404).json({ message: "Booking not found" });
             }
             res.status(200).json({ data });
         } catch (error) {
