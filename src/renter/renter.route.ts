@@ -33,5 +33,12 @@ export class RenterRoute {
             renterOnlyMiddleware,
             this.controller.getMyBookings
         );
+
+        this.router.get(
+            `${this.path}/bookings/:id`,
+            authMiddleware,
+            renterOnlyMiddleware,
+            this.controller.getMyBookingById
+        );
     }
 }
