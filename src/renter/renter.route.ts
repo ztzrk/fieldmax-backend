@@ -40,5 +40,12 @@ export class RenterRoute {
             renterOnlyMiddleware,
             this.controller.getMyBookingById
         );
+
+        this.router.put(
+            `${this.path}/bookings/:id/confirm`,
+            authMiddleware,
+            renterOnlyMiddleware,
+            this.controller.confirmBooking
+        );
     }
 }
