@@ -47,5 +47,12 @@ export class RenterRoute {
             renterOnlyMiddleware,
             this.controller.confirmBooking
         );
+
+        this.router.put(
+            `${this.path}/bookinsg/:id/cancel`,
+            authMiddleware,
+            renterOnlyMiddleware,
+            this.controller.cancelBooking
+        );
     }
 }
