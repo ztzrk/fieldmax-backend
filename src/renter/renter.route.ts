@@ -61,5 +61,12 @@ export class RenterRoute {
             renterOnlyMiddleware,
             this.controller.completeBooking
         );
+
+        this.router.get(
+            `${this.path}/fields`,
+            authMiddleware,
+            renterOnlyMiddleware,
+            this.controller.getMyFields
+        );
     }
 }
