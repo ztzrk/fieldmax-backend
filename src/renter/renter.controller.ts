@@ -137,7 +137,7 @@ export class RenterController {
             const fieldId = req.params.id;
             const data = await this.service.findMyFieldById(renterId, fieldId);
             if (!data) {
-                return res.status(404).json({ message: "Field not found" });
+                res.status(404).json({ message: "Field not found" });
             }
             res.status(200).json({ data });
         } catch (error) {
