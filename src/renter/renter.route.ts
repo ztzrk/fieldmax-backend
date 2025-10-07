@@ -89,5 +89,12 @@ export class RenterRoute {
             renterOnlyMiddleware,
             this.controller.countMyFields
         );
+
+        this.router.get(
+            `${this.path}/venues/count`,
+            authMiddleware,
+            renterOnlyMiddleware,
+            this.controller.countMyVenues
+        );
     }
 }
