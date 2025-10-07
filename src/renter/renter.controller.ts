@@ -173,6 +173,20 @@ export class RenterController {
         }
     };
 
+    public countMyVenues = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const renterId = req.user!.id;
+            const count = await this.service.countMyVenues(renterId);
+            res.status(200).json({ count });
+        } catch (error) {
+            next(error);
+        }
+    };
+
     public getMyVenuesWithPagination = async (
         req: Request,
         res: Response,
