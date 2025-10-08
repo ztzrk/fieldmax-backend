@@ -1,4 +1,6 @@
+import { Prisma } from "@prisma/client";
 import prisma from "../db";
+import { PaginationDto } from "../dtos/pagination.dto";
 
 export class RenterService {
     public async findMyVenues(renterId: string) {
@@ -149,14 +151,72 @@ export class RenterService {
 
     public async findMyVenuesWithPagination(
         renterId: string,
+        query: PaginationDto
+    ) {
+        const { page = 1, limit = 10, search } = query;
+        const skip = (page - 1) * limit;
+
+        const whereCondition: Prisma.VenueWhereInput = search
+            ? {
+                  name: {
+                      contains: search,
+                      mode: "insensitive",
+                  },
+              }
+            : {};
+
+        const [venues, total] = await prisma.$transaction([
+            prisma.venue.findMany({
+                where: {
+                    renterId,
+                    AND: whereCondition,
+                },
+                include: {
+                    renter: {
+                        select: {
+                            fullName: true,
+                            email: true,
+                        },
+                    },
+                    _count: {
+                        select: { fields: true },
+                    },
+                },
+                skip: skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+            }),
+            prisma.venue.count({
+                where: {
+                    renterId,
+                    AND: whereCondition,
+                },
+            }),
+        ]);
+
+        const totalPages = Math.ceil(total / limit);
+
+        return { data: venues, meta: { total, page, limit, totalPages } };
+    }
+
+    public async findMyBookingsWithPagination(
+        renterId: string,
         page: number,
         pageSize: number
     ) {
-        const venues = await prisma.venue.findMany({
-            where: { renterId },
+        const bookings = await prisma.booking.findMany({
+            where: {
+                field: {
+                    venue: {
+                        renterId,
+                    },
+                },
+            },
             include: {
-                _count: {
-                    select: { fields: true },
+                field: {
+                    include: {
+                        venue: true,
+                    },
                 },
             },
             orderBy: { createdAt: "desc" },
@@ -164,12 +224,18 @@ export class RenterService {
             take: pageSize,
         });
 
-        const totalCount = await prisma.venue.count({
-            where: { renterId },
+        const totalCount = await prisma.booking.count({
+            where: {
+                field: {
+                    venue: {
+                        renterId,
+                    },
+                },
+            },
         });
 
         return {
-            venues,
+            bookings,
             totalCount,
             currentPage: page,
             totalPages: Math.ceil(totalCount / pageSize),
