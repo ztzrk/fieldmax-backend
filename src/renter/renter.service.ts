@@ -201,44 +201,50 @@ export class RenterService {
 
     public async findMyBookingsWithPagination(
         renterId: string,
-        page: number,
-        pageSize: number
+        query: PaginationDto
     ) {
-        const bookings = await prisma.booking.findMany({
-            where: {
-                field: {
-                    venue: {
-                        renterId,
-                    },
-                },
-            },
-            include: {
-                field: {
-                    include: {
-                        venue: true,
-                    },
-                },
-            },
-            orderBy: { createdAt: "desc" },
-            skip: (page - 1) * pageSize,
-            take: pageSize,
-        });
+        const { page = 1, limit = 10, search } = query;
+        const skip = (page - 1) * limit;
 
-        const totalCount = await prisma.booking.count({
-            where: {
-                field: {
-                    venue: {
-                        renterId,
-                    },
+        const whereCondition: Prisma.BookingWhereInput = {
+            field: {
+                venue: {
+                    renterId,
                 },
             },
-        });
-
-        return {
-            bookings,
-            totalCount,
-            currentPage: page,
-            totalPages: Math.ceil(totalCount / pageSize),
+            AND: search
+                ? [
+                      {
+                          field: {
+                              name: {
+                                  contains: search,
+                                  mode: "insensitive",
+                              },
+                          },
+                      },
+                  ]
+                : [],
         };
+
+        const [bookings, total] = await prisma.$transaction([
+            prisma.booking.findMany({
+                where: whereCondition,
+                include: {
+                    field: {
+                        include: {
+                            venue: true,
+                        },
+                    },
+                },
+                skip: skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+            }),
+            prisma.booking.count({ where: whereCondition }),
+        ]);
+
+        const totalPages = Math.ceil(total / limit);
+
+        return { data: bookings, meta: { total, page, limit, totalPages } };
     }
 }
