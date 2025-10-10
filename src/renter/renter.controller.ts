@@ -194,11 +194,9 @@ export class RenterController {
     ) => {
         try {
             const renterId = req.user!.id;
-            const { page = 1, limit = 10 } = req.query;
             const data = await this.service.findMyVenuesWithPagination(
                 renterId,
-                Number(page),
-                Number(limit)
+                req.query
             );
             res.status(200).json({ data });
         } catch (error) {
