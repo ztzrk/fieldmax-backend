@@ -96,5 +96,12 @@ export class RenterRoute {
             renterOnlyMiddleware,
             this.controller.countMyVenues
         );
+
+        this.router.get(
+            `${this.path}/venues/pagination`,
+            authMiddleware,
+            renterOnlyMiddleware,
+            this.controller.getMyVenuesWithPagination
+        );
     }
 }
