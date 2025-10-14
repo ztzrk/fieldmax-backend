@@ -1,10 +1,30 @@
+import { Prisma } from "@prisma/client";
 import prisma from "../db";
+import { PaginationDto } from "../dtos/pagination.dto";
 import { CreateSportTypeDto, UpdateSportTypeDto } from "./dtos/sport-type.dto";
 
 export class SportTypesService {
-    public async findAll() {
-        const sportTypes = await prisma.sportType.findMany();
-        return sportTypes;
+    public async findAll(query: PaginationDto) {
+        const { page = 1, limit = 10, search } = query;
+        const skip = (page - 1) * limit;
+
+        const whereCondition: Prisma.SportTypeWhereInput = search
+            ? { name: { contains: search, mode: "insensitive" } }
+            : {};
+
+        const [sportTypes, total] = await prisma.$transaction([
+            prisma.sportType.findMany({
+                where: whereCondition,
+                skip,
+                take: limit,
+            }),
+            prisma.sportType.count({
+                where: whereCondition,
+            }),
+        ]);
+
+        const totalPages = Math.ceil(total / limit);
+        return { data: sportTypes, meta: { total, page, limit, totalPages } };
     }
 
     public async findById(id: string) {
