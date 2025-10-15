@@ -38,4 +38,10 @@ export class ProfileService {
             data: { password: newPassword },
         });
     }
+
+    public async deleteAccount(userId: string) {
+        return prisma.user.delete({
+            where: { id: userId },
+        });
+    }
 }
