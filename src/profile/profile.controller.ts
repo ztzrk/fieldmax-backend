@@ -48,4 +48,18 @@ export class ProfileController {
             next(error);
         }
     };
+
+    public deleteAccount = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const userId = req.user!.id;
+            await this.service.deleteAccount(userId);
+            res.status(200).json({ message: "Account deleted" });
+        } catch (error) {
+            next(error);
+        }
+    };
 }
