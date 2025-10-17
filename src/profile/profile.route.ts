@@ -30,5 +30,10 @@ export class ProfileRoute {
             authMiddleware,
             this.controller.changePassword
         );
+        this.router.delete(
+            `${this.path}/me`,
+            authMiddleware,
+            this.controller.deleteAccount
+        );
     }
 }
