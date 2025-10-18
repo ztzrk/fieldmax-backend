@@ -247,4 +247,48 @@ export class RenterService {
 
         return { data: bookings, meta: { total, page, limit, totalPages } };
     }
+
+    public async findMyFieldsWithPagination(
+        renterId: string,
+        query: PaginationDto
+    ) {
+        const { page = 1, limit = 10, search } = query;
+        const skip = (page - 1) * limit;
+
+        const whereCondition: Prisma.FieldWhereInput = {
+            venue: {
+                renterId,
+            },
+            AND: search
+                ? [
+                      {
+                          name: {
+                              contains: search,
+                              mode: "insensitive",
+                          },
+                      },
+                  ]
+                : [],
+        };
+
+        const [fields, total] = await prisma.$transaction([
+            prisma.field.findMany({
+                where: whereCondition,
+                include: {
+                    venue: true,
+                    _count: {
+                        select: { bookings: true },
+                    },
+                },
+                skip: skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+            }),
+            prisma.field.count({ where: whereCondition }),
+        ]);
+
+        const totalPages = Math.ceil(total / limit);
+
+        return { data: fields, meta: { total, page, limit, totalPages } };
+    }
 }
