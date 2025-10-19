@@ -204,6 +204,23 @@ export class RenterController {
         }
     };
 
+    public getMyFieldsWithPagination = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
+        try {
+            const renterId = req.user!.id;
+            const data = await this.service.findMyFieldsWithPagination(
+                renterId,
+                req.query
+            );
+            res.status(200).json({ data });
+        } catch (error) {
+            next(error);
+        }
+    };
+
     public getMyBookingsWithPagination = async (
         req: Request,
         res: Response,
