@@ -44,7 +44,14 @@ export class AuthController {
                 message: "Login successful",
             });
         } catch (error) {
-            next(error);
+            if (
+                error instanceof Error &&
+                error.message === "Password not matching"
+            ) {
+                res.status(401).json({ message: error.message });
+            } else {
+                next(error);
+            }
         }
     };
 
